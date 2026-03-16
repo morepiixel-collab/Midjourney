@@ -22,7 +22,7 @@ ENV_GROUPS = {
     "FOOD_DIET": ["bright modern home kitchen", "rustic wooden dining table", "organic food market stall", "cozy dining room"]
 }
 
-# 🌟 2. ท่าทางแบบสุ่ม (กรณีไม่ใช้ Preset)
+# 🌟 2. ท่าทางแบบสุ่ม (ตัดคำเยิ่นเย้อออก)
 ACTION_GROUPS = {
     "CORPORATE": ["collaborating enthusiastically with colleagues", "analyzing complex data on a laptop", "leading a strategic business meeting"],
     "HEALTHCARE": ["reviewing patient medical records", "showing a caring professional smile", "examining health data thoughtfully"],
@@ -36,7 +36,7 @@ ACTION_GROUPS = {
     "FOOD_DIET": ["preparing fresh healthy ingredients", "choosing organic vegetables carefully", "enjoying a nutritious balanced meal"]
 }
 
-# 🌟 3. สิ่งของแบบสุ่ม (กรณีไม่มีมนุษย์ และไม่ได้พิมพ์ Manual)
+# 🌟 3. สิ่งของแบบสุ่ม (ภาพไม่มีคน)
 OBJECT_GROUPS = {
     "CORPORATE": ["modern tech gadgets, a coffee cup, and organized corporate documents", "minimalist desk accessories and a digital tablet"],
     "HEALTHCARE": ["clean medical instruments, health charts, and supplements", "a stethoscope alongside a digital health tablet"],
@@ -50,9 +50,10 @@ OBJECT_GROUPS = {
     "FOOD_DIET": ["fresh organic vegetables and rustic wooden cooking utensils", "colorful healthy ingredients, superfood seeds, and fresh fruits"]
 }
 
-ethnicities = ["diverse", "Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mixed-race"]
+# ตัด "diverse" ออก ใช้ความเฉพาะเจาะจงแทน
+ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mixed-race", "South Asian"]
 ages = ["young adult", "middle-aged", "senior"]
-genders = ["man", "woman", "person"]
+genders = ["man", "woman"] # ตัด person ออกเพื่อให้ AI โฟกัสเพศชัดเจนขึ้น
 angles = ["eye-level shot", "medium shot", "slight high angle"]
 
 # --- UI Layout ---
@@ -88,10 +89,10 @@ with col2:
     
     copy_space_list = [
         "Auto (ให้ AI จัดวางเอง)",
-        "Subject positioned on the right, wide empty copy space on the left",
-        "Subject positioned on the left, wide empty copy space on the right",
-        "Centered subject, wide empty negative space around",
-        "Subject at the bottom, wide empty copy space at the top"
+        "subject positioned on the right, wide empty copy space on the left",
+        "subject positioned on the left, wide empty copy space on the right",
+        "centered subject, wide empty negative space around",
+        "subject at the bottom, wide empty copy space at the top"
     ]
     copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", copy_space_list)
     
@@ -122,6 +123,7 @@ with col3:
     st.subheader("🎬 [กลุ่มที่ 3] การตั้งค่าไฟล์ภาพ")
     col3_1, col3_2 = st.columns(2)
     with col3_1:
+        # ค่าเริ่มต้นตั้งไว้ที่ 16:9 ตามมาตรฐานงาน Commercial
         aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
     with col3_2:
         prompt_count = st.number_input("จำนวน Prompts", min_value=10, max_value=200, step=10, value=50)
@@ -143,9 +145,17 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         ready_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
         is_preset_used = True
 
-    active_subject = f"{ready_text}, {main_idea}" if (ready_text and main_idea) else (ready_text or main_idea or "")
+    # สร้าง Active Subject แบบกระชับ
+    if is_preset_used and main_idea:
+        active_subject = f"{ready_text}, {main_idea} concept"
+    elif is_preset_used:
+        active_subject = f"{ready_text}"
+    elif main_idea:
+        active_subject = f"{main_idea}"
+    else:
+        active_subject = ""
 
-    # เช็ค Environment
+    # เช็ค Environment อัตโนมัติ
     target_env = "LIFESTYLE" 
     if is_preset_used:
         if any(tag in ready_idea for tag in ["[1.", "[10."]): target_env = "CORPORATE"
@@ -173,7 +183,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     is_vector = "Flat Vector" in art_medium
     is_3d = "3D Render" in art_medium
 
-    niche_text = f"representing {niche_insights} theme" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
+    niche_text = f"{niche_insights} concept" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
     c_space = copy_space if copy_space != "Auto (ให้ AI จัดวางเอง)" else ""
 
     prompts = []
@@ -183,7 +193,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         final_location = raw_location if is_photo else f"minimalist {raw_location} backdrop"
         stylize_value = random.randint(100, 250)
         
-        # จัดการแสง (ปิดการใช้งานแสงโดยสิ้นเชิงถ้าเป็น Vector)
+        # จัดการแสง (ปิดการใช้งานแสงถ้าเป็น Vector)
         current_light = ""
         if not is_vector:
             if lighting_style == "Auto (ให้ AI สุ่ม)":
@@ -218,7 +228,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         else:
             palette_text = f"using a {color_palette} color palette"
         
-        # 🌟 ลอจิกไร้ที่ติสำหรับ Subject & Action
+        # 🌟 โครงสร้าง Prompt ระดับโปรดักชัน
         prompt_tags = []
         
         if include_human == "Yes":
@@ -229,16 +239,11 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             elif target_env == "FOOD_DIET": clothes = "chef apron"
             elif target_env == "OUTDOOR": clothes = "outdoor activewear"
             
-            # รวบรวมท่าทางให้ไวยากรณ์สละสลวย
+            # Action Logic
             if is_preset_used:
-                if main_idea:
-                    action_str = f"acting out the concept of {ready_text}, conveying {main_idea}"
-                else:
-                    action_str = f"acting out the concept of {ready_text}"
+                action_str = f"{ready_text}"
             else:
                 action_str = random.choice(ACTION_GROUPS[target_env])
-                if main_idea: 
-                    action_str = f"acting out the concept of {main_idea}, {action_str}"
             
             demo_str = f"a {random.choice(ages)} {random.choice(ethnicities)} {random.choice(genders)} dressed in {clothes}"
             
@@ -250,9 +255,9 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             prompt_tags.append(action_str)
 
         else:
-            # 🌟 แก้ไข: ลอจิก Flat Lay ที่ AI เข้าใจ 100%
+            # Flat Lay Logic ที่ AI เข้าใจทันที
             if active_subject:
-                obj_focus = f"conceptual physical objects representing '{active_subject}'"
+                obj_focus = f"everyday objects and workspace elements related to '{active_subject}'"
             else:
                 obj_focus = random.choice(OBJECT_GROUPS[target_env])
             
@@ -260,28 +265,31 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 prompt_tags.append(f"flat lay photography, top-down view of {obj_focus}")
                 prompt_tags.append("knolling aesthetic, neatly organized")
             else:
-                prompt_tags.append(f"clean minimalist illustration featuring {obj_focus}")
+                prompt_tags.append(f"clean minimalist composition featuring {obj_focus}")
 
-        # เพิ่ม Niche และ Location
+        # Concept & Concept Theme
+        if not is_preset_used and main_idea:
+            prompt_tags.append(f"{main_idea} concept")
+            
         if niche_text: prompt_tags.append(niche_text)
         
+        # Location
         if include_human == "No" and is_photo:
-            prompt_tags.append(f"arranged on a flat surface in a {final_location}")
+            prompt_tags.append(f"arranged on a flat surface in {final_location}")
         else:
-            prompt_tags.append(f"set in a {final_location}")
+            prompt_tags.append(f"set in {final_location}")
             
-        # เพิ่มองค์ประกอบศิลป์
+        # Composition & Art Direction
         if c_space: prompt_tags.append(c_space)
         if palette_text: prompt_tags.append(palette_text)
         if current_light: prompt_tags.append(current_light)
         
-        # 🌟 จัดการเอกลักษณ์ของภาพขั้นสุดยอด (Camera & Style)
+        # 🌟 สเปกกล้องและสไตล์ ล็อกตายตัวสำหรับงาน Commercial
         if is_photo:
             if include_human == "Yes":
                 prompt_tags.append(f"shot on {random.choice(['35mm lens, f/8.0', '50mm lens, f/2.8', '85mm lens, f/1.8'])}")
                 prompt_tags.append("high-end commercial stock photography, photorealistic, blurred background")
             else:
-                # Flat lay ต้องคมกริบทั้งภาพ
                 prompt_tags.append("shot on 35mm lens, f/8.0")
                 prompt_tags.append("high-end commercial stock photography, photorealistic, sharp focus across entire layout")
         elif is_vector:
@@ -289,12 +297,13 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         elif is_3d:
             prompt_tags.append("3D isometric illustration, soft smooth clay render, clean background, octane render, blender")
 
-        # ประกอบเป็นประโยคด้วยเครื่องหมายจุลภาค
-        clean_base = ", ".join([p for p in prompt_tags if p])
+        # รวม Tags และกรองค่าว่างออก
+        clean_tags = [p for p in prompt_tags if p]
+        clean_base = ", ".join(clean_tags)
         
         final_prompt = f"/imagine prompt: {clean_base} --style raw --ar {aspect_ratio} --s {stylize_value} --v 7"
             
-        # 🌟 Negative Prompt ที่ปรับตัวตามโหมด
+        # Negative Prompt
         neg_prompt = negative_prompt.strip()
         if is_vector and not "gradient" in neg_prompt:
             neg_prompt += ", gradient, 3d, realistic, shadow, photographic"
@@ -309,7 +318,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (ไวยากรณ์สมบูรณ์แบบระดับ Masterpiece!)")
+    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (พร้อมไวยากรณ์ Midjourney v7 แท้ 100%)")
     
     st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
     for p in prompts[:5]:
