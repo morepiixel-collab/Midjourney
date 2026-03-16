@@ -1,12 +1,11 @@
 import streamlit as st
 import random
-import io
 import re
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
 st.set_page_config(page_title="Midjourney Stock Pro", page_icon="👑", layout="wide")
 
-st.title("👑 The Master Production Edition (100% Perfection Guaranteed)")
+st.title("👑 The Master Production Edition (Photorealistic Stock 100%)")
 st.markdown("---")
 
 # 🌟 1. ข้อมูลสถานที่ (Environment)
@@ -84,8 +83,6 @@ with col1:
 with col2:
     st.subheader("💎 [กลุ่มที่ 2] การจัดองค์ประกอบ (Composition & Style)")
     
-    art_medium = st.selectbox("ประเภทของสื่อ (Art Medium)", ["Photorealistic (ภาพถ่ายสมจริง)", "Flat Vector Illustration (เวกเตอร์ 2D)", "3D Render (ภาพ 3D)"])
-    
     copy_space_list = [
         "Auto (ให้ AI จัดวางเอง)",
         "subject positioned on the right, wide empty copy space on the left",
@@ -121,7 +118,7 @@ with col3:
 
 with col4:
     st.subheader("⚙️ [กลุ่มที่ 4] ข้อจำกัด (Negative Prompt)")
-    negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy")
+    negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy, illustration, 3d, vector")
 
 st.markdown("---")
 
@@ -181,10 +178,6 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
         elif any(x in full_context for x in ["office", "business", "corporate", "bus", "fin", "meeting"]): target_env = "CORPORATE"
 
-    is_photo = "Photorealistic" in art_medium
-    is_vector = "Flat Vector" in art_medium
-    is_3d = "3D Render" in art_medium
-
     niche_text = f"{niche_insights} concept" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
     c_space = copy_space if copy_space != "Auto (ให้ AI จัดวางเอง)" else ""
 
@@ -192,14 +185,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     
     for i in range(prompt_count):
         raw_location = random.choice(ENV_GROUPS[target_env])
-        
-        # 🌟 Dynamic Stylize ป้องกัน Vector รกเกินไป
-        if is_vector:
-            stylize_value = random.randint(50, 100)
-        elif is_3d:
-            stylize_value = random.randint(100, 200)
-        else:
-            stylize_value = random.randint(100, 250)
+        stylize_value = random.randint(100, 250)
         
         # 🌟 จัดการสี
         palette_text = ""
@@ -220,20 +206,22 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
 
         prompt_tags = []
         lens_spec = ""
+        bokeh_effect = ""
         
         # 🌟 ลอจิก Framing + Lens Physics Synchronization
         if include_human == "Yes":
-            if c_space: # ถ้าขอพื้นที่ว่าง ต้องถอยเลนส์มุมกว้าง
+            if c_space: 
                 framing = "wide pulled-back shot"
-                lens_spec = "35mm lens, f/5.6"
-            else: # สุ่มมุมกล้องและจับคู่เลนส์ที่ถูกต้องตามหลักฟิสิกส์
+                lens_spec = "shot on Sony A7R IV, 35mm lens, f/5.6"
+            else:
                 framing_choice = random.choice([
-                    ("wide shot", "35mm lens, f/5.6"), 
-                    ("medium shot", "50mm lens, f/2.8"), 
-                    ("close-up portrait", "85mm lens, f/1.8")
+                    ("wide shot", "shot on Sony A7R IV, 35mm lens, f/5.6", ""), 
+                    ("medium shot", "shot on Canon EOS R5, 50mm lens, f/2.8", "shallow depth of field, blurred background"), 
+                    ("close-up portrait", "shot on Fujifilm GFX 100, 85mm lens, f/1.2", "beautiful bokeh, blurred background, extreme shallow depth of field")
                 ])
                 framing = framing_choice[0]
                 lens_spec = framing_choice[1]
+                bokeh_effect = framing_choice[2]
 
             clothes = "modern smart casual"
             if target_env in ["CORPORATE", "CYBER_TECH"]: clothes = "professional business attire"
@@ -259,13 +247,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 action_str = random.choice(ACTION_GROUPS[target_env])
                 if main_idea: action_str += f", illustrating {main_idea}"
             
-            if is_photo:
-                prompt_tags.append(f"{framing} of {demo_str}")
-            elif is_vector:
-                prompt_tags.append(f"clean flat vector illustration of {demo_str}")
-            else:
-                prompt_tags.append(f"3D isometric render of {demo_str}")
-                
+            prompt_tags.append(f"{framing} of {demo_str}")
             prompt_tags.append(action_str)
 
         else:
@@ -275,73 +257,48 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             else:
                 obj_focus = random.choice(OBJECT_GROUPS[target_env])
             
-            if is_photo:
-                prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
-                prompt_tags.append("knolling aesthetic, perfectly organized")
-                lens_spec = "35mm lens, f/8.0" # เลนส์คมกริบชัดลึก
-            elif is_vector:
-                prompt_tags.append(f"top-down flat vector graphic featuring {obj_focus}")
-            else:
-                prompt_tags.append(f"top-down orthographic 3D render featuring {obj_focus}")
+            prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
+            prompt_tags.append("knolling aesthetic, perfectly organized")
+            lens_spec = "shot on Sony A7R IV, 35mm lens, f/8.0, sharp focus across entire layout"
 
         # Niche
         if niche_text: prompt_tags.append(niche_text)
         
-        # 🌟 ระบบ Background และการแยกประเภทสื่ออย่างเด็ดขาด
-        if is_photo:
-            if include_human == "No":
-                prompt_tags.append(f"arranged flat on a surface within a {raw_location}")
-            else:
-                prompt_tags.append(f"set in a {raw_location}")
+        # 🌟 ระบบ Background 
+        if include_human == "No":
+            prompt_tags.append(f"arranged flat on a surface within a {raw_location}")
         else:
-            # Vector/3D ตัดสถานที่จริงทิ้ง บังคับฉากหลังสตูดิโอ
-            prompt_tags.append("isolated on a clean solid white background")
+            prompt_tags.append(f"set in a {raw_location}")
+            if bokeh_effect: prompt_tags.append(bokeh_effect)
             
         # Composition & Palette
         if c_space: prompt_tags.append(c_space)
         if palette_text: prompt_tags.append(palette_text)
         
-        # 🌟 ระบบแสง (Lighting) แยกขาดออกจากกัน 100%
-        if is_photo:
-            if lighting_style == "Auto (ให้ AI สุ่ม)":
-                if target_env == "CORPORATE": light = random.choice(["Clean Office Light", "Professional Studio Light"])
-                elif target_env == "HEALTHCARE": light = random.choice(["Bright Clinical Light", "Clean White Light"])
-                elif target_env == "WELLNESS": light = random.choice(["Soft Natural Light", "Dreamy Diffused Light"])
-                elif target_env == "OUTDOOR": light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight"])
-                elif target_env == "CYBER_TECH": light = random.choice(["Modern Neon Accent", "Cinematic Dark Lighting"])
-                else: light = random.choice(["Warm Ambient Light", "Soft Natural Light"])
-                prompt_tags.append(f"lit by {light}")
-            elif lighting_style != "Auto (ให้ AI สุ่ม)":
-                prompt_tags.append(f"lit by {lighting_style}")
-        elif is_3d:
-            prompt_tags.append("soft global illumination, clean studio lighting")
-        # Vector ไม่ใส่แท็กแสงเลย เพื่อให้แบนที่สุด
+        # 🌟 ระบบแสง (Lighting) 
+        if lighting_style == "Auto (ให้ AI สุ่ม)":
+            if target_env == "CORPORATE": light = random.choice(["Clean Office Light", "Professional Studio Light"])
+            elif target_env == "HEALTHCARE": light = random.choice(["Bright Clinical Light", "Clean White Light"])
+            elif target_env == "WELLNESS": light = random.choice(["Soft Natural Light", "Dreamy Diffused Light"])
+            elif target_env == "OUTDOOR": light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight"])
+            elif target_env == "CYBER_TECH": light = random.choice(["Modern Neon Accent", "Cinematic Dark Lighting"])
+            else: light = random.choice(["Warm Ambient Light", "Soft Natural Light"])
+            prompt_tags.append(f"lit by {light}")
+        elif lighting_style != "Auto (ให้ AI สุ่ม)":
+            prompt_tags.append(f"lit by {lighting_style}")
 
-        # 🌟 Camera & Style Suffix
-        if is_photo:
-            prompt_tags.append(lens_spec)
-            if include_human == "Yes":
-                prompt_tags.append("high-end commercial stock photography, photorealistic, --style raw")
-            else:
-                prompt_tags.append("high-end commercial stock photography, photorealistic, sharp focus across entire layout, --style raw")
-        elif is_vector:
-            prompt_tags.append("corporate memphis style, minimalist UI/UX aesthetic, no gradients, 2d")
-        elif is_3d:
-            prompt_tags.append("soft smooth clay render, octane render, blender")
+        # 🌟 Camera & Style Suffix (ล็อก Photorealistic)
+        prompt_tags.append(lens_spec)
+        prompt_tags.append("high-end commercial stock photography, photorealistic")
 
         clean_tags = [p for p in prompt_tags if p]
         clean_base = ", ".join(clean_tags)
         
-        # ประกอบเป็นประโยคสุดท้าย
-        final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --v 7"
+        # ประกอบเป็นประโยคสุดท้าย (ฝัง --style raw เป็นค่าเริ่มต้น)
+        final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
             
         # 🌟 Negative Prompt
         neg_prompt = negative_prompt.strip()
-        if is_vector and not "gradient" in neg_prompt:
-            neg_prompt += ", gradient, 3d, realistic, shadow, photographic"
-        elif is_3d and not "photo" in neg_prompt:
-            neg_prompt += ", photo, 2d, flat vector"
-            
         if neg_prompt:
             final_prompt += f" --no {neg_prompt}"
             
@@ -356,10 +313,10 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     for p in prompts[:5]:
         st.code(p, language="text")
 
-    text_buffer = io.BytesIO(prompt_text.encode('utf-8'))
+    # แก้ไขบั๊กการดาวน์โหลดไฟล์โดยใช้ตัวแปร String โดยตรง
     st.download_button(
         label="💾 ดาวน์โหลดไฟล์ .txt สำหรับ Midjourney",
-        data=text_buffer,
+        data=prompt_text,
         file_name="midjourney_master_production.txt",
         mime="text/plain",
         use_container_width=True
