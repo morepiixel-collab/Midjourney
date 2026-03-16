@@ -25,7 +25,7 @@ ENV_GROUPS = {
 # 🌟 2. ท่าทางแบบสุ่ม
 ACTION_GROUPS = {
     "CORPORATE": ["collaborating enthusiastically", "analyzing complex data", "leading a strategic business meeting"],
-    "HEALTHCARE": ["reviewing patient medical records", "showing a caring professional smile", "examining health data"],
+    "HEALTHCARE": ["reviewing patient medical records", "providing professional care", "examining health data"],
     "WELLNESS": ["practicing deep mindfulness", "sitting in a relaxed zen posture", "enjoying a peaceful mindful moment"],
     "OUTDOOR": ["admiring the expansive scenic view", "walking purposefully", "enjoying the fresh natural air"],
     "LIFESTYLE": ["enjoying a warm cup of coffee", "scrolling thoughtfully on a smartphone", "relaxing comfortably"],
@@ -54,7 +54,7 @@ ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mix
 ages = ["young adult", "middle-aged", "senior"]
 genders = ["man", "woman"] 
 
-# --- UI Layout (ปรับปรุงใหม่ตาม Flow 1 -> 2 -> 3) ---
+# --- UI Layout ---
 
 st.subheader("1️⃣ กำหนดเนื้อหาภาพ (Subject & Story)")
 col1, col2, col3 = st.columns(3)
@@ -264,25 +264,33 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             else:
                 demo_str = f"a {selected_age} {selected_eth} {random.choice(genders)} dressed in {clothes}"
             
-            # 🌟 การกระทำ
+            # 🌟 การกระทำ (แกรมม่าไหลลื่นขึ้น)
             if is_preset_used:
-                action_str = f"engaged in {ready_text}"
-                if main_idea: action_str += f", portraying {main_idea}"
+                action_str = f"depicting a scene of {ready_text}"
+                if main_idea: action_str += f", {main_idea}"
             else:
                 action_str = random.choice(ACTION_GROUPS[target_env])
                 if main_idea: action_str += f", illustrating {main_idea}"
             
-            # 🌟 ล็อกอารมณ์/สีหน้า (Emotion)
+            # 🌟 Smart Emotion Safety (กันภาพป่วยแต่นั่งยิ้ม)
             if emotion_control == "Auto (สุ่มตามสถานการณ์)":
-                emotion_str = random.choice(["candid and authentic", "natural subtle smile", "deeply focused"])
+                negative_kws = ["burnout", "sick", "patient", "tired", "stressed", "sad", "hacker"]
+                if any(kw in active_subject.lower() for kw in negative_kws):
+                    emotion_str = random.choice(["deeply focused", "serious and authentic", "showing exhaustion"])
+                else:
+                    emotion_str = random.choice(["candid and authentic", "natural subtle smile", "deeply focused"])
             else:
                 emotion_str = emotion_control
                 
             prompt_tags.append(f"{framing} of {demo_str}")
-            prompt_tags.append(f"{action_str}, showing a {emotion_str} expression")
+            prompt_tags.append(f"{action_str}, conveying a {emotion_str} expression")
+
+            # 🌟 ระบบ มุมกล้อง (Camera Angle สำหรับภาพคนเท่านั้น)
+            if camera_angle != "Auto (ให้ AI สุ่มมุมกล้อง)":
+                prompt_tags.append(camera_angle)
 
         else:
-            # 🌟 Flat Lay Logic แบบสมบูรณ์
+            # 🌟 Flat Lay Logic แบบสมบูรณ์ (ภาพสิ่งของ)
             if active_subject:
                 obj_focus = f"everyday objects and elements related to '{active_subject}'"
             else:
@@ -291,13 +299,10 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
             prompt_tags.append("knolling aesthetic, perfectly organized")
             lens_spec = "shot on Sony A7R IV, 35mm lens, f/8.0, sharp focus across entire layout"
+            # ไม่ดึง Camera Angle มาต่อท้ายใน Flat Lay เพื่อป้องกัน Midjourney สับสน
 
         # Niche
         if niche_text: prompt_tags.append(niche_text)
-        
-        # 🌟 ระบบ มุมกล้อง (Camera Angle)
-        if camera_angle != "Auto (ให้ AI สุ่มมุมกล้อง)":
-            prompt_tags.append(camera_angle)
 
         # 🌟 ระบบ Background 
         if include_human == "No":
@@ -348,7 +353,6 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     for p in prompts[:5]:
         st.code(p, language="text")
 
-    # แก้ไขบั๊กการดาวน์โหลดไฟล์โดยใช้ตัวแปร String โดยตรง
     st.download_button(
         label="💾 ดาวน์โหลดไฟล์ .txt สำหรับ Midjourney",
         data=prompt_text,
