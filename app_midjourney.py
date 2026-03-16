@@ -137,14 +137,17 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     
     main_idea = idea_manual.strip()
     ready_text = ""
+    is_preset_used = False
+    
     if ready_idea != "Auto (ให้ AI สุ่ม)" and not ready_idea.startswith("---"):
         ready_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
+        is_preset_used = True
 
     active_subject = f"{ready_text}, {main_idea}" if (ready_text and main_idea) else (ready_text or main_idea or "")
 
     # เช็ค Environment
     target_env = "LIFESTYLE" 
-    if "Auto" not in ready_idea and "---" not in ready_idea:
+    if is_preset_used:
         if any(tag in ready_idea for tag in ["[1.", "[10."]): target_env = "CORPORATE"
         elif any(tag in ready_idea for tag in ["[2.", "[4.", "[7."]): target_env = "CYBER_TECH"
         elif any(tag in ready_idea for tag in ["[5.", "[8."]): target_env = "ECO_SUSTAINABILITY"
@@ -176,10 +179,17 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     prompts = []
     
     for i in range(prompt_count):
-        final_location = random.choice(ENV_GROUPS[target_env])
+        raw_location = random.choice(ENV_GROUPS[target_env])
+        
+        # 🌟 แก้ไข: จัดการ Background ให้เหมาะสมกับ Vector/3D
+        if not is_photo:
+            final_location = f"minimalist {raw_location} background"
+        else:
+            final_location = raw_location
+            
         stylize_value = random.randint(100, 250)
         
-        # 🌟 ลบแสงออกถ้าเป็นงาน Vector (ป้องกัน AI ใส่เงาสมจริง)
+        # จัดการแสง
         current_light = ""
         if not is_vector:
             if lighting_style == "Auto (ให้ AI สุ่ม)":
@@ -195,9 +205,9 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 else: current_light = random.choice(["Warm Ambient Light", "Soft Natural Light"])
             else:
                 current_light = lighting_style
-            
             if current_light: current_light = f"lit by {current_light}"
 
+        # จัดการสี
         palette_text = ""
         if color_palette == "Auto (ให้ AI สุ่ม)":
             if target_env == "CORPORATE": auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
@@ -215,7 +225,8 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             eng_color = color_palette.split(" (")[0]
             palette_text = f"using a {eng_color} color palette"
         
-        # ประกอบร่าง Subject แบบ Smart Context
+        # 🌟 แก้ไข: ประกอบร่าง Subject และ Action ป้องกันการขัดแย้ง
+        subject_part = ""
         if include_human == "Yes":
             clothes = "modern smart casual"
             if target_env in ["CORPORATE", "CYBER_TECH"]: clothes = "professional business attire"
@@ -224,58 +235,70 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             elif target_env == "FOOD_DIET": clothes = "chef apron or smart casual"
             elif target_env == "OUTDOOR": clothes = "weather-appropriate outdoor gear"
             
-            # สุ่มท่าทางให้ตรงหมวด
-            action = random.choice(ACTION_GROUPS[target_env])
+            # Smart Action Override: ถ้ามี Preset ให้ใช้ Preset เป็นท่าทางหลักไปเลย
+            if is_preset_used:
+                action = ready_text
+            else:
+                action = f"{random.choice(ACTION_GROUPS[target_env])}"
+                if main_idea:
+                    action += f", engaging in {main_idea}"
             
             if is_photo:
                 subject_part = f"{random.choice(angles)} of a {random.choice(ages)} {random.choice(ethnicities)} {random.choice(genders)} in {clothes}, {action}"
             else:
                 subject_part = f"illustration of a {random.choice(ages)} {random.choice(ethnicities)} {random.choice(genders)} in {clothes}, {action}"
         else:
-            # 🌟 แก้ไขเลนส์สำหรับภาพ Flat lay (ต้องบังคับเลนส์ชัดลึก)
             no_human_angles = ["flat lay top-down view", "still life composition", "clean workspace setup"]
             obj_focus = random.choice(OBJECT_GROUPS[target_env])
             
             if is_photo:
                 subject_part = f"{random.choice(no_human_angles)} featuring {obj_focus}"
+                if active_subject: subject_part += f", representing the concept of '{active_subject}'"
             else:
                 subject_part = f"clean composition featuring {obj_focus}"
+                if active_subject: subject_part += f", conceptualizing '{active_subject}'"
 
         # นำมาต่อกันตามลำดับ
         parts = [subject_part]
-        
-        # ปรับการรวมคำเชื่อมให้สมูท
-        if active_subject: 
-            if include_human == "No":
-                parts.append(f"representing the concept of '{active_subject}'") # อธิบายว่าของบนโต๊ะสื่อถึงอะไร
-            else:
-                parts.append(f"showcasing {active_subject}")
                 
         if niche_text: parts.append(niche_text)
-        parts.append(f"at {final_location}")
+        
+        # การระบุสถานที่
+        if include_human == "No" and is_photo:
+            parts.append(f"on a flat surface in {final_location}")
+        else:
+            parts.append(f"set in {final_location}" if not is_photo else f"at {final_location}")
+            
         if c_space: parts.append(c_space)
         if palette_text: parts.append(palette_text)
         if current_light: parts.append(current_light)
         
-        # ใส่ Art Medium Style
+        # 🌟 แก้ไข: จัดการ Art Medium Style & Lens
         if is_photo:
-            # 🌟 ถ่ายคนใช้เลนส์ละลายหลังได้ ถ้าถ่ายของ(Flat lay) ต้องใช้เลนส์คมลึก
             if include_human == "Yes":
                 parts.append(f"{random.choice(['shot on 35mm lens, f/8.0', 'shot on 50mm lens, f/2.8', 'shot on 85mm lens, f/1.8'])}")
+                parts.append("high-end commercial stock photography, photorealistic, blurred background, --style raw")
             else:
-                parts.append(f"{random.choice(['shot on 35mm lens, f/8.0', 'shot on 50mm lens, f/5.6'])}") # บังคับ f-stop แคบเพื่อความชัด
-                
-            parts.append("high-end commercial stock photography, photorealistic, blurred background, --style raw")
+                # ภาพ Flat lay/Still life บังคับเลนส์คมลึก ตัด blurred background ทิ้ง
+                parts.append(f"{random.choice(['shot on 35mm lens, f/8.0', 'shot on 50mm lens, f/8.0'])}")
+                parts.append("high-end commercial stock photography, photorealistic, sharp focus across the entire plane, perfectly flat layout, --style raw")
         elif is_vector:
-            parts.append("clean flat vector illustration, corporate memphis style, minimalist UI/UX aesthetic, solid pastel background, no gradients")
+            parts.append("clean flat vector illustration, corporate memphis style, minimalist UI/UX aesthetic, clean solid background, no gradients")
         elif is_3d:
             parts.append("3D illustration, soft smooth clay render, isometric view, octane render, blender, clean background")
 
         clean_base = ", ".join([p for p in parts if p])
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --v 7"
             
-        if negative_prompt.strip():
-            final_prompt += f" --no {negative_prompt.strip()}"
+        # 🌟 เพิ่ม Negative Prompt อัตโนมัติ ป้องกันการผิดแนว
+        neg_prompt = negative_prompt.strip()
+        if is_vector and not "gradient" in neg_prompt:
+            neg_prompt += ", gradient, 3d, realistic, shadow"
+        elif is_3d and not "photo" in neg_prompt:
+            neg_prompt += ", photo, 2d, flat vector"
+            
+        if neg_prompt:
+            final_prompt += f" --no {neg_prompt}"
             
         prompts.append(final_prompt)
 
