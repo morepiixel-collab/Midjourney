@@ -113,6 +113,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
 
     active_subject = f"{ready_text}, {main_idea}" if (ready_text and main_idea) else (ready_text or main_idea or "")
 
+    # กำหนด Environment อัตโนมัติ
     full_context = (active_subject + " " + niche_insights).lower()
     target_env = "LIFESTYLE"
     if any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "nat", "spo", "tra", "bike", "motorbike", "sunset", "glacier", "sea"]): target_env = "OUTDOOR"
@@ -132,26 +133,47 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     dist_lenses = get_variety_list(lenses, prompt_count)
 
     niche_text = f"{niche_insights} concept" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
-    
-    # ตัดคำภาษาไทยออกจากโทนสี
-    palette_text = ""
-    if color_palette != "Auto (ให้ AI สุ่ม)":
-        eng_color = color_palette.split(" (")[0]
-        palette_text = f"using a {eng_color} color palette"
-        
     c_space = copy_space if copy_space != "Auto (ให้ AI จัดวางเอง)" else ""
 
     prompts = []
     
     for i in range(prompt_count):
         final_location = random.choice(ENV_GROUPS[target_env])
-        
-        current_light = lighting_style
-        if current_light == "Auto (ให้ AI สุ่ม)":
-            current_light = random.choice(["Clean bright lighting", "Soft diffused light", "Studio lighting"])
-        
         stylize_value = random.randint(100, 250)
         
+        # 🌟 ระบบ Smart Lighting (สุ่มอิงตาม Environment)
+        current_light = lighting_style
+        if current_light == "Auto (ให้ AI สุ่ม)":
+            if target_env == "CORPORATE":
+                current_light = random.choice(["Clean Office Light", "Professional Studio Light", "Soft Diffused Light"])
+            elif target_env == "HEALTHCARE":
+                current_light = random.choice(["Bright Clinical Light", "Clean White Light", "Soft Natural Light"])
+            elif target_env == "WELLNESS":
+                current_light = random.choice(["Soft Natural Light", "Dreamy Diffused Light", "Warm Window Light"])
+            elif target_env == "OUTDOOR":
+                current_light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight", "Soft Morning Light"])
+            else: # LIFESTYLE
+                current_light = random.choice(["Warm Ambient Light", "Soft Natural Light", "Bright & Airy Light"])
+
+        # 🌟 ระบบ Smart Color (สุ่มอิงตาม Environment)
+        palette_text = ""
+        if color_palette == "Auto (ให้ AI สุ่ม)":
+            if target_env == "CORPORATE":
+                auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
+            elif target_env == "HEALTHCARE":
+                auto_c = random.choice(["Clean White & Blue", "Soft Pastels", "Neutral & Clean"])
+            elif target_env == "WELLNESS":
+                auto_c = random.choice(["Warm Earth Tones", "Muted & Earthy", "Soft Pastels"])
+            elif target_env == "OUTDOOR":
+                auto_c = random.choice(["Natural & True-to-life", "Vibrant & Punchy", "Warm Earth Tones"])
+            else: # LIFESTYLE
+                auto_c = random.choice(["Warm & Inviting", "Muted Scandinavian", "Bright & Airy"])
+            palette_text = f"using a {auto_c} color palette"
+        else:
+            eng_color = color_palette.split(" (")[0]
+            palette_text = f"using a {eng_color} color palette"
+        
+        # จัดการ Subject (มนุษย์ / ไม่มีมนุษย์)
         if include_human == "Yes":
             clothes = "modern smart casual"
             if target_env == "CORPORATE": clothes = "professional business attire"
@@ -170,6 +192,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             else:
                 subject_part = f"clean composition featuring {obj_focus}"
 
+        # ประกอบร่าง Prompt
         parts = [subject_part]
         if active_subject: parts.append(active_subject)
         if niche_text: parts.append(niche_text)
@@ -178,6 +201,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         if palette_text: parts.append(palette_text)
         parts.append(f"lit by {current_light}")
         
+        # ใส่ Art Medium Style
         if is_photo:
             parts.append(f"{dist_lenses[i]}")
             parts.append("high-end commercial stock photography, photorealistic, blurred background, --style raw")
@@ -197,7 +221,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts!")
+    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (พร้อมระบบ Smart Auto Color & Lighting)")
     
     st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
     for p in prompts[:5]:
