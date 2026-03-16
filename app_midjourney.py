@@ -8,13 +8,18 @@ st.set_page_config(page_title="Midjourney Stock Pro", page_icon="👑", layout="
 st.title("👑 The Master Production Edition (Ultimate Stock Contributor)")
 st.markdown("---")
 
-# --- ตัวแปรคงที่ (Constants) ---
+# 🌟 อัปเกรด: ขยายฐานข้อมูลสถานที่ให้ครอบคลุมและตรงโจทย์ทุก Niche
 ENV_GROUPS = {
-    "CORPORATE": ["bright modern office interior", "minimalist executive boardroom", "high-tech startup workspace", "organized professional center"],
-    "HEALTHCARE": ["clean minimalist clinic", "high-end wellness center interior", "modern medical research lab"],
-    "WELLNESS": ["peaceful sunlit yoga studio", "tranquil meditation room", "serene garden area", "wellness retreat interior"],
-    "OUTDOOR": ["scenic mountain pass", "golden hour beach", "lush park", "nature trail", "remote landscape"],
-    "LIFESTYLE": ["cozy artisanal cafe", "modern minimalist living room", "stylish home kitchen", "urban rooftop terrace"]
+    "CORPORATE": ["bright modern office interior", "minimalist executive boardroom", "high-tech startup workspace", "glass-walled conference room", "busy coworking space"],
+    "HEALTHCARE": ["clean minimalist clinic", "high-end wellness center interior", "modern medical research lab", "bright hospital corridor", "futuristic medical facility"],
+    "WELLNESS": ["peaceful sunlit yoga studio", "tranquil meditation room", "serene indoor zen garden", "luxury wellness retreat interior", "minimalist calm room"],
+    "OUTDOOR": ["scenic mountain pass", "golden hour beach", "lush green national park", "remote scenic landscape", "sunny hiking trail"],
+    "LIFESTYLE": ["cozy artisanal cafe", "modern minimalist living room", "urban rooftop terrace", "stylish boutique interior", "sunlit home office"],
+    "CYBER_TECH": ["futuristic server room", "neon-lit data center", "high-tech control room", "dark room with glowing computer screens", "advanced robotics lab"],
+    "ECO_SUSTAINABILITY": ["sustainable green building interior", "lush indoor vertical garden", "solar panel field", "modern eco-friendly greenhouse", "wind farm landscape"],
+    "EDUCATION": ["modern university classroom", "bright digital learning hub", "quiet library with books", "interactive e-learning studio", "campus study hall"],
+    "ECOMMERCE_LOGISTICS": ["automated modern warehouse", "clean distribution center", "bright packaging facility", "logistics control center", "retail stockroom"],
+    "FOOD_DIET": ["bright modern home kitchen", "rustic wooden dining table", "organic food market stall", "clean culinary prep area", "cozy dining room"]
 }
 
 ethnicities = ["diverse", "Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mixed-race"]
@@ -47,7 +52,10 @@ with col1:
         "--- 🤖 7. Future Tech (General) ---", "[7.1 Tech] transparent holographic interface", "[7.2 Tech] VR headset data visualization",
         "--- 🌍 8. Sustainability & Eco ---", "[8.1 Eco] holding small plant", "[8.2 Eco] charging electric vehicle",
         "--- 🧘‍♀️ 9. Mental Health & Wellness ---", "[9.1 Wellness] meditating peaceful room", "[9.2 Wellness] writing gratitude journal",
-        "--- 💼 10. Corporate Leadership ---", "[10.1 Business] executive presentation", "[10.2 Business] shaking hands deal"
+        "--- 💼 10. Corporate Leadership ---", "[10.1 Business] executive presentation", "[10.2 Business] shaking hands deal",
+        "--- 🎓 11. E-Learning ---", "[11.1 Edu] online lecture on laptop", "[11.2 Edu] notes during masterclass",
+        "--- 🚚 12. E-Commerce & Logistics ---", "[12.1 Ecom] clicking Buy Now phone", "[12.2 Ecom] receiving delivery box",
+        "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] drinking green detox smoothie"
     ]
     ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list)
     include_human = st.radio("มีมนุษย์ (Include Human)", ["Yes", "No"], horizontal=True)
@@ -113,13 +121,32 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
 
     active_subject = f"{ready_text}, {main_idea}" if (ready_text and main_idea) else (ready_text or main_idea or "")
 
-    # กำหนด Environment อัตโนมัติ
-    full_context = (active_subject + " " + niche_insights).lower()
-    target_env = "LIFESTYLE"
-    if any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "nat", "spo", "tra", "bike", "motorbike", "sunset", "glacier", "sea"]): target_env = "OUTDOOR"
-    elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital", "clin", "sci"]): target_env = "HEALTHCARE"
-    elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
-    elif any(x in full_context for x in ["office", "business", "corporate", "bus", "cyber", "fin", "edu", "tec", "meeting", "manager"]): target_env = "CORPORATE"
+    # 🌟 อัปเกรด: ระบบประเมินสถานที่แบบ Smart Logic (Context-Aware)
+    target_env = "LIFESTYLE" # ค่าเริ่มต้น
+    
+    # เช็คจาก Preset ก่อน (แม่นยำสูงที่สุด)
+    if "Auto" not in ready_idea and "---" not in ready_idea:
+        if any(tag in ready_idea for tag in ["[1.", "[10."]): target_env = "CORPORATE"
+        elif any(tag in ready_idea for tag in ["[2.", "[4.", "[7."]): target_env = "CYBER_TECH"
+        elif any(tag in ready_idea for tag in ["[5.", "[8."]): target_env = "ECO_SUSTAINABILITY"
+        elif any(tag in ready_idea for tag in ["[6."]): target_env = "HEALTHCARE"
+        elif any(tag in ready_idea for tag in ["[9."]): target_env = "WELLNESS"
+        elif any(tag in ready_idea for tag in ["[11."]): target_env = "EDUCATION"
+        elif any(tag in ready_idea for tag in ["[12."]): target_env = "ECOMMERCE_LOGISTICS"
+        elif any(tag in ready_idea for tag in ["[13."]): target_env = "FOOD_DIET"
+        elif any(tag in ready_idea for tag in ["[3."]): target_env = "LIFESTYLE"
+    else:
+        # หากพิมพ์เอง (Manual) ให้เช็คจาก Keyword (Fallback)
+        full_context = (main_idea + " " + niche_insights).lower()
+        if any(x in full_context for x in ["cyber", "ai", "tech", "hacker", "data", "server", "code", "software"]): target_env = "CYBER_TECH"
+        elif any(x in full_context for x in ["eco", "sustainab", "solar", "green", "farm", "climate"]): target_env = "ECO_SUSTAINABILITY"
+        elif any(x in full_context for x in ["school", "class", "study", "learn", "student", "university"]): target_env = "EDUCATION"
+        elif any(x in full_context for x in ["delivery", "warehouse", "box", "pack", "logistics", "shipping"]): target_env = "ECOMMERCE_LOGISTICS"
+        elif any(x in full_context for x in ["food", "cook", "kitchen", "salad", "diet", "meal", "eat"]): target_env = "FOOD_DIET"
+        elif any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "sea", "hike"]): target_env = "OUTDOOR"
+        elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital", "clinic"]): target_env = "HEALTHCARE"
+        elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
+        elif any(x in full_context for x in ["office", "business", "corporate", "bus", "fin", "meeting", "manager"]): target_env = "CORPORATE"
 
     is_photo = "Photorealistic" in art_medium
     is_vector = "Flat Vector" in art_medium
@@ -141,33 +168,33 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         final_location = random.choice(ENV_GROUPS[target_env])
         stylize_value = random.randint(100, 250)
         
-        # 🌟 ระบบ Smart Lighting (สุ่มอิงตาม Environment)
+        # 🌟 ระบบ Smart Lighting 
         current_light = lighting_style
         if current_light == "Auto (ให้ AI สุ่ม)":
-            if target_env == "CORPORATE":
-                current_light = random.choice(["Clean Office Light", "Professional Studio Light", "Soft Diffused Light"])
-            elif target_env == "HEALTHCARE":
-                current_light = random.choice(["Bright Clinical Light", "Clean White Light", "Soft Natural Light"])
-            elif target_env == "WELLNESS":
-                current_light = random.choice(["Soft Natural Light", "Dreamy Diffused Light", "Warm Window Light"])
-            elif target_env == "OUTDOOR":
-                current_light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight", "Soft Morning Light"])
-            else: # LIFESTYLE
-                current_light = random.choice(["Warm Ambient Light", "Soft Natural Light", "Bright & Airy Light"])
+            if target_env == "CORPORATE": current_light = random.choice(["Clean Office Light", "Professional Studio Light"])
+            elif target_env == "HEALTHCARE": current_light = random.choice(["Bright Clinical Light", "Clean White Light"])
+            elif target_env == "WELLNESS": current_light = random.choice(["Soft Natural Light", "Dreamy Diffused Light"])
+            elif target_env == "OUTDOOR": current_light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight"])
+            elif target_env == "CYBER_TECH": current_light = random.choice(["Modern Neon Accent", "Cinematic Dark Lighting", "High-Contrast Tech Lighting"])
+            elif target_env == "ECO_SUSTAINABILITY": current_light = random.choice(["Bright Natural Sunlight", "Soft Morning Light"])
+            elif target_env == "EDUCATION": current_light = random.choice(["Bright Room Lighting", "Soft Natural Light"])
+            elif target_env == "ECOMMERCE_LOGISTICS": current_light = random.choice(["Bright Industrial Light", "Clean Fluorescent Light"])
+            elif target_env == "FOOD_DIET": current_light = random.choice(["Warm Window Light", "Soft Directional Light"])
+            else: current_light = random.choice(["Warm Ambient Light", "Soft Natural Light", "Bright & Airy Light"])
 
-        # 🌟 ระบบ Smart Color (สุ่มอิงตาม Environment)
+        # 🌟 ระบบ Smart Color
         palette_text = ""
         if color_palette == "Auto (ให้ AI สุ่ม)":
-            if target_env == "CORPORATE":
-                auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
-            elif target_env == "HEALTHCARE":
-                auto_c = random.choice(["Clean White & Blue", "Soft Pastels", "Neutral & Clean"])
-            elif target_env == "WELLNESS":
-                auto_c = random.choice(["Warm Earth Tones", "Muted & Earthy", "Soft Pastels"])
-            elif target_env == "OUTDOOR":
-                auto_c = random.choice(["Natural & True-to-life", "Vibrant & Punchy", "Warm Earth Tones"])
-            else: # LIFESTYLE
-                auto_c = random.choice(["Warm & Inviting", "Muted Scandinavian", "Bright & Airy"])
+            if target_env == "CORPORATE": auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
+            elif target_env == "HEALTHCARE": auto_c = random.choice(["Clean White & Blue", "Soft Pastels", "Neutral & Clean"])
+            elif target_env == "WELLNESS": auto_c = random.choice(["Warm Earth Tones", "Muted & Earthy", "Soft Pastels"])
+            elif target_env == "OUTDOOR": auto_c = random.choice(["Natural & True-to-life", "Vibrant & Punchy"])
+            elif target_env == "CYBER_TECH": auto_c = random.choice(["Cool Teal & Grey", "High-Contrast Black & Gold"])
+            elif target_env == "ECO_SUSTAINABILITY": auto_c = random.choice(["Natural & True-to-life", "Muted & Earthy"])
+            elif target_env == "EDUCATION": auto_c = random.choice(["Bright & Airy", "Neutral & Clean"])
+            elif target_env == "ECOMMERCE_LOGISTICS": auto_c = random.choice(["Neutral & Clean", "Bright & Airy"])
+            elif target_env == "FOOD_DIET": auto_c = random.choice(["Warm & Inviting", "Natural & True-to-life"])
+            else: auto_c = random.choice(["Warm & Inviting", "Muted Scandinavian", "Bright & Airy"])
             palette_text = f"using a {auto_c} color palette"
         else:
             eng_color = color_palette.split(" (")[0]
@@ -176,8 +203,10 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         # จัดการ Subject (มนุษย์ / ไม่มีมนุษย์)
         if include_human == "Yes":
             clothes = "modern smart casual"
-            if target_env == "CORPORATE": clothes = "professional business attire"
+            if target_env in ["CORPORATE", "CYBER_TECH"]: clothes = "professional business attire"
             elif target_env == "HEALTHCARE": clothes = "medical uniform"
+            elif target_env == "ECOMMERCE_LOGISTICS": clothes = "warehouse uniform"
+            elif target_env == "FOOD_DIET": clothes = "chef apron or smart casual"
             
             if is_photo:
                 subject_part = f"{dist_angles[i]} of a {dist_ages[i]} {dist_ethnicities[i]} {dist_genders[i]} in {clothes}, {dist_actions[i]}"
@@ -185,7 +214,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 subject_part = f"illustration of a {dist_ages[i]} {dist_ethnicities[i]} {dist_genders[i]} in {clothes}, {dist_actions[i]}"
         else:
             no_human_angles = ["flat lay top-down view", "still life composition", "clean workspace setup"]
-            obj_focus = random.choice(["modern tech gadgets and coffee", "organized corporate documents and tablet", "symbolic business elements", "minimalist desk accessories"])
+            obj_focus = random.choice(["modern tech gadgets", "organized corporate documents", "symbolic commercial elements"])
             
             if is_photo:
                 subject_part = f"{random.choice(no_human_angles)} featuring {obj_focus}"
@@ -221,7 +250,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (พร้อมระบบ Smart Auto Color & Lighting)")
+    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (พร้อมระบบ Smart Location, Color & Lighting)")
     
     st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
     for p in prompts[:5]:
