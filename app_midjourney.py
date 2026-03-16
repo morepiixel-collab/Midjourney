@@ -54,11 +54,30 @@ ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mix
 ages = ["young adult", "middle-aged", "senior"]
 genders = ["man", "woman"] 
 
-# --- Helper Function สำหรับหลักไวยากรณ์ (Grammar) ---
+# --- Helper Functions สำหรับหลักไวยากรณ์ (Grammar) ---
 def get_article(word):
     """ส่งคืน 'an' ถ้าคำขึ้นต้นด้วยสระ นอกนั้นคืน 'a'"""
     if not word: return ""
     return "an" if word[0].lower() in "aeiou" else "a"
+
+def get_emotion_phrase(emotion_val, active_subj=""):
+    """จัดการแกรมม่าอารมณ์ให้เป็นธรรมชาติ และปลอดภัยจากความขัดแย้ง"""
+    if emotion_val == "Auto (สุ่มตามสถานการณ์)":
+        negative_kws = ["burnout", "sick", "patient", "tired", "stressed", "sad", "hacker", "angry", "frustrate", "cry"]
+        if any(kw in active_subj.lower() for kw in negative_kws):
+            return random.choice(["showing a deeply focused expression", "with a serious and authentic look", "showing visible exhaustion"])
+        else:
+            return random.choice(["showing a natural warm smile", "showing a candid and authentic expression", "exhibiting a warm and friendly demeanor"])
+    else:
+        mapping = {
+            "Natural warm smile": "showing a natural warm smile",
+            "Candid and authentic": "showing a candid and authentic expression",
+            "Deeply focused": "showing a deeply focused expression",
+            "Relaxed and calm": "exhibiting a relaxed and calm mood",
+            "Excited and joyful": "showing an excited and joyful expression"
+        }
+        return mapping.get(emotion_val, f"showing {get_article(emotion_val)} {emotion_val.lower()} expression")
+
 
 # --- UI Layout (1 -> 2 -> 3) ---
 
@@ -162,7 +181,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         clean_preset_text = re.sub(remove_words, 'workspace elements', ready_text, flags=re.IGNORECASE).strip()
         clean_preset_text = re.sub(r'\s+', ' ', clean_preset_text)
 
-    # 🌟 รวม Subject
+    # 🌟 รวม Subject (What)
     if is_preset_used and main_idea:
         active_subject = f"{clean_preset_text}, {main_idea}"
     elif is_preset_used:
@@ -208,7 +227,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         raw_location = random.choice(ENV_GROUPS[target_env])
         stylize_value = random.randint(100, 250)
         
-        # 🎨 โทนสี
+        # 🎨 โทนสี (Color Palette)
         palette_text = ""
         if color_palette == "Auto (ให้ AI สุ่ม)":
             if target_env == "CORPORATE": auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
@@ -221,22 +240,23 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             elif target_env == "ECOMMERCE_LOGISTICS": auto_c = random.choice(["Neutral & Clean", "Bright & Airy"])
             elif target_env == "FOOD_DIET": auto_c = random.choice(["Warm & Inviting", "Natural & True-to-life"])
             else: auto_c = random.choice(["Warm & Inviting", "Muted Scandinavian"])
-            palette_text = f"using {get_article(auto_c)} {auto_c} color palette"
+            palette_text = f"using a {auto_c} color palette" # แกรมม่าปลอดภัยที่สุดสำหรับโทนสี
         else:
-            palette_text = f"using {get_article(color_palette)} {color_palette} color palette"
+            palette_text = f"using a {color_palette} color palette"
 
         prompt_tags = []
         lens_spec = ""
         bokeh_effect = ""
         
         # 📸 1. Medium (เริ่มด้วยความสมจริง)
-        prompt_tags.append("high-end commercial stock photography, photorealistic")
+        prompt_tags.append("high-end commercial stock photography")
+        prompt_tags.append("photorealistic")
         
         # 🧑 2. หากเป็นภาพมนุษย์ (Include Human)
         if include_human == "Yes":
             
-            # --- 2.1 มุมกล้องและการจัดเฟรม (Camera & Framing) ---
-            if c_space: 
+            # --- 2.1 มุมกล้องและการจัดเฟรม (How) ---
+            if c_space and c_space != "Auto (ให้ AI จัดวางเอง)": 
                 framing = "wide pulled-back shot"
                 lens_spec = "shot on Sony A7R IV, 35mm lens, f/5.6"
             else:
@@ -249,6 +269,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 lens_spec = framing_choice[1]
                 bokeh_effect = framing_choice[2]
 
+            # วางมุมกล้องให้เป็นประธานของฉาก
             if camera_angle != "Auto (ให้ AI สุ่มมุมกล้อง)":
                 framing = f"{camera_angle}, {framing}"
 
@@ -259,7 +280,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             elif target_env == "ECOMMERCE_LOGISTICS": clothes = "warehouse uniform with safety vest"
             elif target_env == "FOOD_DIET": clothes = "casual home clothing or chef apron"
             elif target_env == "OUTDOOR": clothes = "outdoor hiking activewear"
-            elif target_env == "WELLNESS": clothes = "comfortable activewear or yoga clothes"
+            elif target_env == "WELLNESS": clothes = "comfortable yoga activewear"
             elif target_env == "EDUCATION": clothes = "casual campus attire"
             elif target_env == "ECO_SUSTAINABILITY": clothes = "sustainable organic cotton clothing"
             else: clothes = "modern smart casual"
@@ -272,17 +293,17 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             elif demo_control == "Young Adults Only": selected_eth, selected_age = random.choice(ethnicities), "young adult"
             else: selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
 
+            # ประกอบประโยค Who + How (เสื้อผ้า) อย่างเป็นธรรมชาติ
             sub_lower = active_subject.lower()
             if any(kw in sub_lower for kw in ['couple', 'two people']):
-                demo_str = f"{get_article(selected_age)} {selected_age} couple dressed in {clothes}"
+                demo_str = f"a {selected_age} couple dressed in {clothes}"
             elif any(kw in sub_lower for kw in ['family', 'parents']):
                 demo_str = f"a diverse family dressed in {clothes}"
             elif is_group:
                 demo_str = f"a diverse group of professionals dressed in {clothes}" if target_env == "CORPORATE" else f"a diverse group of people dressed in {clothes}"
             else:
-                demo_str = f"{get_article(selected_age)} {selected_age} {selected_eth} {random.choice(genders)} dressed in {clothes}"
+                demo_str = f"a {selected_age} {selected_eth} {random.choice(genders)} dressed in {clothes}"
             
-            # ประกอบ Who + How
             prompt_tags.append(f"{framing} of {demo_str}")
 
             # --- 2.4 การกระทำ (What) ---
@@ -294,17 +315,9 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 if main_idea: action_str += f", {main_idea}"
             prompt_tags.append(action_str)
 
-            # --- 2.5 อารมณ์ (Emotion) แบบปลอดภัย ---
-            if emotion_control == "Auto (สุ่มตามสถานการณ์)":
-                negative_kws = ["burnout", "sick", "patient", "tired", "stressed", "sad", "hacker", "angry", "frustrate", "cry"]
-                if any(kw in active_subject.lower() for kw in negative_kws):
-                    emotion_str = random.choice(["deeply focused", "serious", "tired and exhausted"])
-                else:
-                    emotion_str = random.choice(["candid and authentic", "natural subtle smile", "warm and friendly"])
-            else:
-                emotion_str = emotion_control.lower()
-            
-            prompt_tags.append(f"exhibiting {get_article(emotion_str)} {emotion_str} mood")
+            # --- 2.5 อารมณ์และสีหน้า (Emotion / How) แบบปลอดภัยและแกรมม่าเป๊ะ ---
+            final_emotion_phrase = get_emotion_phrase(emotion_control, active_subject)
+            prompt_tags.append(final_emotion_phrase)
 
         # 📦 3. หากเป็นภาพสิ่งของ (No Human / Flat Lay)
         else:
@@ -314,21 +327,23 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 obj_focus = random.choice(OBJECT_GROUPS[target_env])
             
             prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
-            prompt_tags.append("knolling aesthetic, perfectly organized")
+            prompt_tags.append("knolling aesthetic, perfectly organized layout")
             lens_spec = "shot on Sony A7R IV, 35mm lens, f/8.0, sharp focus across entire layout"
 
-        # 🌟 4. บริบทเสริม (Niche Concept)
+        # 🌟 4. บริบทเสริมเจาะตลาด (Niche Concept)
         if niche_text: prompt_tags.append(niche_text)
 
         # 🌟 5. สถานที่ (Where)
         if include_human == "No":
-            prompt_tags.append(f"arranged flat on a surface within {get_article(raw_location)} {raw_location}")
+            prompt_tags.append(f"arranged flat on a surface within a {raw_location}")
         else:
-            prompt_tags.append(f"set in {get_article(raw_location)} {raw_location}")
+            prompt_tags.append(f"set in a {raw_location}")
             if bokeh_effect: prompt_tags.append(bokeh_effect)
             
-        # 🌟 6. องค์ประกอบภาพ และ แสง (Composition, Palette, Lighting - When)
-        if c_space: prompt_tags.append(c_space)
+        # 🌟 6. องค์ประกอบภาพ (Copy Space)
+        if c_space and c_space != "Auto (ให้ AI จัดวางเอง)": prompt_tags.append(c_space)
+        
+        # 🌟 7. แสงและสี (Lighting & Color / When)
         if palette_text: prompt_tags.append(palette_text)
         
         if lighting_style == "Auto (ให้ AI สุ่ม)":
@@ -342,13 +357,14 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         elif lighting_style != "Auto (ให้ AI สุ่ม)":
             prompt_tags.append(f"lit by {lighting_style}")
 
-        # 🌟 7. เลนส์และสเปคกล้อง (Technical)
+        # 🌟 8. ข้อมูลเลนส์และกล้องขั้นสูง (Technical)
         prompt_tags.append(lens_spec)
 
-        # 🧹 ทำความสะอาดและประกอบร่าง
+        # 🧹 ทำความสะอาด Tags ว่างๆ และประกอบร่างประโยค
         clean_tags = [p for p in prompt_tags if p]
         clean_base = ", ".join(clean_tags)
         
+        # ประกอบคำสั่ง Midjourney แบบสมบูรณ์
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
             
         neg_prompt = negative_prompt.strip()
@@ -360,7 +376,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (Grammar Fixed & Production Ready!)")
+    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (โค้ดคลีน แกรมม่าเป๊ะ ไร้จุดบอด 100%!)")
     
     st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
     for p in prompts[:5]:
