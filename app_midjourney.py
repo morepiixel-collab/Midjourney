@@ -3,9 +3,9 @@ import random
 import io
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
-st.set_page_config(page_title="Midjourney Prompt Generator", page_icon="👑", layout="wide")
+st.set_page_config(page_title="Midjourney Stock Pro", page_icon="👑", layout="wide")
 
-st.title("👑 The Master Production Edition (Minimal & Clean)")
+st.title("👑 The Master Production Edition (Ultimate Stock Contributor)")
 st.markdown("---")
 
 # --- ตัวแปรคงที่ (Constants) ---
@@ -24,9 +24,6 @@ angles = ["eye-level shot", "medium shot", "slight high angle", "wide angle shot
 action_stories = ["working focused on a project", "collaborating with a team", "showing success on screen", "engaged in deep discussion", "mentoring with a smile", "making a decisive gesture"]
 lenses = ["shot on 35mm lens, f/8.0", "shot on 50mm lens, f/2.8", "shot on 85mm lens, f/1.8"]
 
-# สไตล์หลักบังคับตายตัว (เน้นงาน Commercial Stock)
-fixed_style = "high-end commercial stock photography, authentic, clean composition, negative space for text, photorealistic, blurred background, --style raw --v 7"
-
 def get_variety_list(source_list, count):
     shuffled = source_list.copy()
     random.shuffle(shuffled)
@@ -36,8 +33,8 @@ def get_variety_list(source_list, count):
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🎯 [กลุ่มที่ 1] ไอเดียและรูปแบบมนุษย์")
-    idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="digital nomad lifestyle", help="พิมพ์คีย์เวิร์ดหลักที่ต้องการ หากเลือกสถานการณ์ด้านล่างด้วย ระบบจะนำมารวมกันให้เอง")
+    st.subheader("🎯 [กลุ่มที่ 1] ไอเดียและรูปแบบ (Subject)")
+    idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="digital nomad lifestyle", help="พิมพ์คีย์เวิร์ดหลักที่ต้องการ")
     
     ready_ideas_list = [
         "Auto (ให้ AI สุ่ม)", 
@@ -56,13 +53,30 @@ with col1:
     include_human = st.radio("มีมนุษย์ (Include Human)", ["Yes", "No"], horizontal=True)
 
 with col2:
-    st.subheader("💎 [กลุ่มที่ 2] การเจาะจงตลาด (Niche, Tone & Lighting)")
-    niche_list = ["Auto (ให้ AI สุ่ม)", "Nature-Inspired Wellness", "Inclusive Healthcare Solutions", "Sustainable Fashion Trends", "Green Technology Innovation", "Environmental Sustainability", "Digital Nomad Lifestyle", "Mental Health Awareness", "Cybersecurity Best Practices", "Corporate Social Responsibility", "Data-Driven Decision Making"]
-    niche_insights = st.selectbox("หัวข้อ Niche Insights", niche_list)
+    st.subheader("💎 [กลุ่มที่ 2] การจัดองค์ประกอบและสไตล์ (Composition & Style)")
     
-    color_palette = st.selectbox("โทนสี (Color Palette)", ["Auto (ให้ AI สุ่ม)", "Modern Blue & White (Corporate/Trust)", "Warm Earth Tones (Wellness/Organic)", "Vibrant & Energetic (Tech/Startup)", "Soft Pastels (Life/Minimalist)", "High-Contrast Black & Gold (Luxury)", "Cool Teal & Grey (Cyber/Future)", "Muted Scandinavian (Home/Style)"])
+    # 🌟 เพิ่ม: ประเภทของสื่อ (Art Medium)
+    art_medium = st.selectbox("ประเภทของสื่อ (Art Medium)", ["Photorealistic (ภาพถ่ายสมจริง)", "Flat Vector Illustration (เวกเตอร์ 2D)", "3D Render (ภาพ 3D)"])
     
-    lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
+    # 🌟 เพิ่ม: Copy Space Control
+    copy_space_list = [
+        "Auto (ให้ AI จัดวางเอง)",
+        "Subject on the right, wide copy space on the left",
+        "Subject on the left, wide copy space on the right",
+        "Centered subject, wide negative space around",
+        "Subject at the bottom, wide copy space at the top"
+    ]
+    copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", copy_space_list)
+    
+    # ✂️ ปรับ: ลดคำ Niche Insights ให้กระชับขึ้น
+    niche_list = ["Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data"]
+    niche_insights = st.selectbox("เจาะจงตลาด (Niche)", niche_list)
+    
+    col2_1, col2_2 = st.columns(2)
+    with col2_1:
+        color_palette = st.selectbox("โทนสี (Color)", ["Auto (ให้ AI สุ่ม)", "Modern Blue & White", "Warm Earth Tones", "Vibrant & Energetic", "Soft Pastels", "High-Contrast Black & Gold", "Cool Teal & Grey", "Muted Scandinavian"])
+    with col2_2:
+        lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
 
 st.markdown("---")
 
@@ -85,7 +99,7 @@ st.markdown("---")
 # --- ปุ่มประมวลผล ---
 if st.button("🚀 Generate Prompts", use_container_width=True):
     
-    # รวม Logic ของไอเดีย
+    # 1. รวม Logic ของไอเดีย
     main_idea = idea_manual.strip()
     ready_text = ""
     if ready_idea != "Auto (ให้ AI สุ่ม)" and not ready_idea.startswith("---"):
@@ -96,13 +110,18 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     else:
         active_subject = ready_text or main_idea or ""
 
-    # ค้นหา Environment อัตโนมัติจากบริบท
+    # 2. ค้นหา Environment อัตโนมัติจากบริบท
     full_context = (active_subject + " " + niche_insights).lower()
     target_env = "LIFESTYLE"
-    if any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "nat", "spo", "tra", "bike", "motorbike", "sunset", "glacier", "sea", "hiking", "cycling"]): target_env = "OUTDOOR"
-    elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital", "clin", "sci", "treatment"]): target_env = "HEALTHCARE"
-    elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful", "parenting"]): target_env = "WELLNESS"
-    elif any(x in full_context for x in ["office", "business", "corporate", "bus", "cyber", "fin", "edu", "tec", "meeting", "manager", "work", "entrepreneur"]): target_env = "CORPORATE"
+    if any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "nat", "spo", "tra", "bike", "motorbike", "sunset", "glacier", "sea"]): target_env = "OUTDOOR"
+    elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital", "clin", "sci"]): target_env = "HEALTHCARE"
+    elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
+    elif any(x in full_context for x in ["office", "business", "corporate", "bus", "cyber", "fin", "edu", "tec", "meeting", "manager"]): target_env = "CORPORATE"
+
+    # 3. เตรียม Style ตาม Art Medium ที่เลือก
+    is_photo = "Photorealistic" in art_medium
+    is_vector = "Flat Vector" in art_medium
+    is_3d = "3D Render" in art_medium
 
     # กระจายความหลากหลาย
     dist_ethnicities = get_variety_list(ethnicities, prompt_count)
@@ -112,8 +131,13 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     dist_actions = get_variety_list(action_stories, prompt_count)
     dist_lenses = get_variety_list(lenses, prompt_count)
 
-    niche_text = f"in a {niche_insights} environment" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
-    palette_text = f"using a {color_palette.split(' (')[0]} palette" if color_palette != "Auto (ให้ AI สุ่ม)" else ""
+    niche_text = f"{niche_insights} concept" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
+    palette_text = f"using a {color_palette} color palette" if color_palette != "Auto (ให้ AI สุ่ม)" else ""
+    
+    # จัดการ Copy Space
+    c_space = ""
+    if copy_space != "Auto (ให้ AI จัดวางเอง)":
+        c_space = copy_space
 
     prompts = []
     for i in range(prompt_count):
@@ -121,37 +145,50 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         
         current_light = lighting_style
         if current_light == "Auto (ให้ AI สุ่ม)":
-            if target_env == "CORPORATE": current_light = random.choice(["Clean Office Light", "Professional Studio Light"])
-            elif target_env == "HEALTHCARE": current_light = "Bright Clinical Light"
-            elif target_env == "OUTDOOR": current_light = random.choice(["Golden Hour Sunlight", "Natural Daylight"])
-            elif target_env == "WELLNESS": current_light = "Soft Diffused Light"
-            else: current_light = random.choice(["Soft Natural Light", "Warm Ambient Light"])
+            current_light = random.choice(["Clean bright lighting", "Soft diffused light", "Studio lighting"])
         
         stylize_value = random.randint(100, 250)
         
+        # 4. จัดการประโยค Subject (แยกตาม Human / No Human และแยกตาม Art Medium)
         if include_human == "Yes":
             clothes = "modern smart casual"
             if target_env == "CORPORATE": clothes = "professional business attire"
             elif target_env == "HEALTHCARE": clothes = "medical uniform"
-            elif target_env == "OUTDOOR": clothes = "weather-appropriate outdoor gear"
-            subject_part = f"{dist_angles[i]} of a {dist_ages[i]} {dist_ethnicities[i]} {dist_genders[i]} in {clothes}"
-            action_part = dist_actions[i]
+            
+            if is_photo:
+                subject_part = f"{dist_angles[i]} of a {dist_ages[i]} {dist_ethnicities[i]} {dist_genders[i]} in {clothes}, {dist_actions[i]}"
+            else:
+                subject_part = f"illustration of a {dist_ages[i]} {dist_ethnicities[i]} {dist_genders[i]} in {clothes}, {dist_actions[i]}"
         else:
-            obj_focus = random.choice(["modern tech gadgets", "organized desk setup", "symbolic professional tools"])
-            subject_part = f"{dist_angles[i]} of a clean scene featuring {obj_focus}"
-            action_part = "with meticulous details and copy space"
+            # ✂️ ปรับประโยคกรณีไม่เอามนุษย์ เน้นงาน Commercial/Flat lay/Still life
+            no_human_angles = ["flat lay top-down view", "still life composition", "clean workspace setup"]
+            obj_focus = random.choice(["modern tech gadgets and coffee", "organized corporate documents and tablet", "symbolic business elements", "minimalist desk accessories"])
+            
+            if is_photo:
+                subject_part = f"{random.choice(no_human_angles)} featuring {obj_focus}"
+            else:
+                subject_part = f"clean composition featuring {obj_focus}"
 
-        parts = [subject_part, action_part]
-        if niche_text: parts.append(niche_text)
+        # 5. ประกอบร่าง Prompt
+        parts = [subject_part]
         if active_subject: parts.append(active_subject)
+        if niche_text: parts.append(niche_text)
+        parts.append(f"at {final_location}")
+        if c_space: parts.append(c_space) # ใส่ Copy space
         if palette_text: parts.append(palette_text)
         parts.append(f"lit by {current_light}")
-        parts.append("clean commercial style")
         
+        # 6. ใส่ Suffix ของแต่ละ Medium
+        if is_photo:
+            parts.append(f"{dist_lenses[i]}")
+            parts.append("high-end commercial stock photography, photorealistic, blurred background, --style raw")
+        elif is_vector:
+            parts.append("clean flat vector illustration, corporate memphis style, minimalist UI/UX aesthetic, solid pastel background, no gradients")
+        elif is_3d:
+            parts.append("3D illustration, soft smooth clay render, isometric view, octane render, blender, clean background")
+
         clean_base = ", ".join([p for p in parts if p])
-        
-        # จัดการพารามิเตอร์หลัก
-        final_prompt = f"/imagine prompt: {clean_base}, at {final_location}, {dist_lenses[i]}, {fixed_style} --ar {aspect_ratio} --s {stylize_value}"
+        final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --v 7"
             
         # เพิ่ม Negative Prompt
         if negative_prompt.strip():
@@ -162,11 +199,9 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (พร้อม Negative Prompt)")
+    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts (พร้อมปรับแต่ง Metadata อย่างมืออาชีพ)")
     
     st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
-    st.info("💡 นำเมาส์ไปชี้ที่มุมขวาบนของกล่องข้อความ จะมีไอคอน 'Copy' ปรากฏขึ้นมาครับ")
-    
     for p in prompts[:5]:
         st.code(p, language="text")
 
@@ -174,7 +209,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     st.download_button(
         label="💾 ดาวน์โหลดไฟล์ .txt ทั้งหมด",
         data=text_buffer,
-        file_name="midjourney_clean_prompts.txt",
+        file_name="midjourney_ultimate_stock.txt",
         mime="text/plain",
         use_container_width=True
     )
