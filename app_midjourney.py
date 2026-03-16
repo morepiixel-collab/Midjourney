@@ -4,92 +4,63 @@ import io
 import re
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
-st.set_page_config(page_title="Midjourney Stock Photo Pro", page_icon="📸", layout="wide")
+st.set_page_config(page_title="Midjourney Stock Pro", page_icon="👑", layout="wide")
 
-st.title("👑 The Master Production: 100% Perfection Guaranteed")
+st.title("👑 The Master Production Edition (100% Perfection Guaranteed)")
 st.markdown("---")
 
-# 🌟 1. ข้อมูลสถานที่และแสง (Smart Environment & Lighting Mapping)
-ENV_DATA = {
-    "CORPORATE": {
-        "locs": ["modern bright office interior", "minimalist executive boardroom", "high-tech startup workspace"],
-        "lights": ["Clean Office Light", "Professional Studio Light", "Soft Diffused Light"]
-    },
-    "HEALTHCARE": {
-        "locs": ["clean minimalist clinic", "premium wellness center", "modern medical lab"],
-        "lights": ["Bright Clinical Light", "Clean White Light", "Soft Natural Light"]
-    },
-    "WELLNESS": {
-        "locs": ["peaceful sunlit yoga studio", "tranquil meditation room", "serene indoor zen garden"],
-        "lights": ["Soft Natural Light", "Dreamy Diffused Light", "Warm Window Light"]
-    },
-    "OUTDOOR": {
-        "locs": ["scenic mountain pass", "golden hour beach", "lush green national park", "sunny hiking trail"],
-        "lights": ["Golden Hour Sunlight", "Bright Natural Daylight", "Soft Morning Light"]
-    },
-    "LIFESTYLE": {
-        "locs": ["cozy artisanal cafe", "modern minimalist living room", "urban rooftop terrace"],
-        "lights": ["Warm Ambient Light", "Soft Natural Light", "Bright & Airy Light"]
-    },
-    "CYBER_TECH": {
-        "locs": ["futuristic server room", "neon-lit data center", "high-tech control room"],
-        "lights": ["Modern Neon Accent", "Cinematic Dark Lighting", "High-Contrast Tech Lighting"]
-    },
-    "ECO_SUSTAINABILITY": {
-        "locs": ["sustainable green building interior", "lush indoor vertical garden", "solar panel field"],
-        "lights": ["Bright Natural Sunlight", "Soft Morning Light"]
-    },
-    "EDUCATION": {
-        "locs": ["modern university classroom", "bright digital learning hub", "quiet modern library"],
-        "lights": ["Bright Room Lighting", "Soft Natural Light"]
-    },
-    "ECOMMERCE_LOGISTICS": {
-        "locs": ["automated modern warehouse", "clean distribution center", "bright packaging facility"],
-        "lights": ["Bright Industrial Light", "Clean Fluorescent Light"]
-    },
-    "FOOD_DIET": {
-        "locs": ["bright modern home kitchen", "rustic wooden dining table", "organic food market stall"],
-        "lights": ["Warm Window Light", "Soft Directional Light"]
-    }
+# 🌟 1. ข้อมูลสถานที่ (Environment)
+ENV_GROUPS = {
+    "CORPORATE": ["modern bright office interior", "minimalist executive boardroom", "high-end startup workspace", "glass-walled conference room"],
+    "HEALTHCARE": ["clean minimalist clinic", "premium wellness center", "modern medical lab", "bright hospital corridor"],
+    "WELLNESS": ["peaceful sunlit yoga studio", "tranquil meditation room", "serene indoor zen garden", "minimalist calm room"],
+    "OUTDOOR": ["scenic mountain pass", "golden hour beach", "lush green national park", "sunny hiking trail"],
+    "LIFESTYLE": ["cozy artisanal cafe", "modern minimalist living room", "urban rooftop terrace", "sunlit home office"],
+    "CYBER_TECH": ["futuristic server room", "neon-lit data center", "high-tech control room", "advanced robotics lab"],
+    "ECO_SUSTAINABILITY": ["sustainable green building interior", "lush indoor vertical garden", "solar panel field", "eco-friendly greenhouse"],
+    "EDUCATION": ["modern university classroom", "bright digital learning hub", "quiet modern library", "interactive e-learning studio"],
+    "ECOMMERCE_LOGISTICS": ["automated modern warehouse", "clean distribution center", "bright packaging facility", "logistics control center"],
+    "FOOD_DIET": ["bright modern home kitchen", "rustic wooden dining table", "organic food market stall", "cozy dining room"]
 }
 
-# 🌟 2. ท่าทางและสิ่งของ (Subject & Objects)
-ACTION_DATA = {
-    "CORPORATE": "collaborating with team members",
-    "HEALTHCARE": "reviewing health information",
-    "WELLNESS": "practicing mindfulness and relaxation",
-    "OUTDOOR": "enjoying the natural environment",
-    "LIFESTYLE": "relaxing in a modern setting",
-    "CYBER_TECH": "interacting with digital data",
-    "ECO_SUSTAINABILITY": "examining eco-friendly elements",
-    "EDUCATION": "focusing on learning and study",
-    "ECOMMERCE_LOGISTICS": "managing logistics operations",
-    "FOOD_DIET": "preparing healthy organic food"
+# 🌟 2. ท่าทางแบบสุ่ม
+ACTION_GROUPS = {
+    "CORPORATE": ["collaborating enthusiastically", "analyzing complex data", "leading a strategic business meeting"],
+    "HEALTHCARE": ["reviewing patient medical records", "showing a caring professional smile", "examining health data"],
+    "WELLNESS": ["practicing deep mindfulness", "sitting in a relaxed zen posture", "enjoying a peaceful mindful moment"],
+    "OUTDOOR": ["admiring the expansive scenic view", "walking purposefully", "enjoying the fresh natural air"],
+    "LIFESTYLE": ["enjoying a warm cup of coffee", "scrolling thoughtfully on a smartphone", "relaxing comfortably"],
+    "CYBER_TECH": ["typing rapidly on a glowing keyboard", "analyzing complex digital interfaces", "working intensely on software code"],
+    "ECO_SUSTAINABILITY": ["inspecting green plants carefully", "holding eco-friendly materials", "examining environmental data metrics"],
+    "EDUCATION": ["taking detailed academic notes", "reading a book attentively", "focusing intensely on e-learning materials"],
+    "ECOMMERCE_LOGISTICS": ["scanning inventory barcodes", "organizing delivery packages", "checking logistics data"],
+    "FOOD_DIET": ["preparing fresh healthy ingredients", "choosing organic vegetables carefully", "enjoying a nutritious balanced meal"]
 }
 
+# 🌟 3. สิ่งของแบบสุ่ม (ภาพไม่มีคน)
 OBJECT_GROUPS = {
-    "CORPORATE": "modern tech gadgets, coffee cup, and organized documents",
-    "HEALTHCARE": "medical instruments and digital health charts",
-    "WELLNESS": "essential oil bottles, yoga mat, and zen stones",
-    "OUTDOOR": "hiking gear, camera, and outdoor map",
-    "LIFESTYLE": "stylish magazine, ceramic cup, and houseplant",
-    "CYBER_TECH": "circuit boards and futuristic smart devices",
-    "ECO_SUSTAINABILITY": "biodegradable materials and small growing plant",
-    "EDUCATION": "academic notebooks, laptop, and premium pen",
-    "ECOMMERCE_LOGISTICS": "delivery boxes and barcode scanner",
-    "FOOD_DIET": "fresh organic vegetables and wooden utensils"
+    "CORPORATE": ["modern tech gadgets, a coffee cup, and organized corporate documents", "minimalist desk accessories and a digital tablet"],
+    "HEALTHCARE": ["clean medical instruments, health charts, and supplements", "a stethoscope alongside a digital health tablet"],
+    "WELLNESS": ["essential oil bottles, a neatly rolled yoga mat, and smooth zen stones", "a gratitude journal, herbal tea cup, and bamboo elements"],
+    "OUTDOOR": ["a vintage compass, an outdoor trail map, and hiking gear", "travel essentials, a digital camera, and a reusable water bottle"],
+    "LIFESTYLE": ["a stylish lifestyle magazine, sunglasses, and a ceramic coffee cup", "minimalist home decor items and a small potted houseplant"],
+    "CYBER_TECH": ["advanced circuit boards, glowing fiber optic cables, and tech hardware", "cybersecurity conceptual elements and smart devices"],
+    "ECO_SUSTAINABILITY": ["biodegradable packaging materials and fresh green leaves", "recycled paper products and a small growing plant"],
+    "EDUCATION": ["open academic textbooks, highlighters, and a modern laptop", "neatly stacked notebooks, a premium pen, and digital learning tools"],
+    "ECOMMERCE_LOGISTICS": ["sturdy cardboard boxes, shipping labels, and a barcode scanner", "premium product packaging and a logistics tracking tablet"],
+    "FOOD_DIET": ["fresh organic vegetables and rustic wooden cooking utensils", "colorful healthy ingredients, superfood seeds, and fresh fruits"]
 }
 
 ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mixed-race", "South Asian"]
 ages = ["young adult", "middle-aged", "senior"]
-genders = ["man", "woman"]
+genders = ["man", "woman"] 
 
 # --- UI Layout ---
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("🎯 [กลุ่มที่ 1] ไอเดียและรูปแบบ (Subject)")
-    idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="", help="พิมพ์คีย์เวิร์ดหลัก")
+    idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="", help="พิมพ์คีย์เวิร์ดหลักที่ต้องการ")
     
     ready_ideas_list = [
         "Auto (ให้ AI สุ่ม)", 
@@ -99,133 +70,297 @@ with col1:
         "--- 🔒 4. Cybersecurity & Data ---", "[4.1 Cyber] hacker silhouette computer screen", "[4.2 Cyber] digital data protection shield",
         "--- 💰 5. Finance, Startup & ESG ---", "[5.1 Fin/ESG] fintech mobile payment", "[5.2 Fin/ESG] startup growth chart",
         "--- 🏥 6. High-Demand Healthcare ---", "[6.1 Health] doctor consulting patient", "[6.2 Health] telemedicine online doctor",
+        "--- 🤖 7. Future Tech (General) ---", "[7.1 Tech] transparent holographic interface", "[7.2 Tech] VR headset data visualization",
         "--- 🌍 8. Sustainability & Eco ---", "[8.1 Eco] holding small plant", "[8.2 Eco] charging electric vehicle",
         "--- 🧘‍♀️ 9. Mental Health & Wellness ---", "[9.1 Wellness] meditating peaceful room", "[9.2 Wellness] writing gratitude journal",
         "--- 💼 10. Corporate Leadership ---", "[10.1 Business] executive presentation", "[10.2 Business] shaking hands deal",
+        "--- 🎓 11. E-Learning ---", "[11.1 Edu] online lecture on laptop", "[11.2 Edu] notes during masterclass",
         "--- 🚚 12. E-Commerce & Logistics ---", "[12.1 Ecom] clicking Buy Now phone", "[12.2 Ecom] receiving delivery box",
-        "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] diverse family cooking dinner together"
+        "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] diverse family cooking dinner together", "[13.3 Food] young couple cooking together"
     ]
     ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list)
     include_human = st.radio("มีมนุษย์ (Include Human)", ["Yes", "No"], horizontal=True)
 
 with col2:
-    st.subheader("💎 [กลุ่มที่ 2] การจัดองค์ประกอบ (Composition)")
-    copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", [
+    st.subheader("💎 [กลุ่มที่ 2] การจัดองค์ประกอบ (Composition & Style)")
+    
+    art_medium = st.selectbox("ประเภทของสื่อ (Art Medium)", ["Photorealistic (ภาพถ่ายสมจริง)", "Flat Vector Illustration (เวกเตอร์ 2D)", "3D Render (ภาพ 3D)"])
+    
+    copy_space_list = [
         "Auto (ให้ AI จัดวางเอง)",
-        "subject on the right, wide empty copy space on the left",
-        "subject on the left, wide empty copy space on the right",
-        "centered subject, wide negative space around",
+        "subject positioned on the right, wide empty copy space on the left",
+        "subject positioned on the left, wide empty copy space on the right",
+        "centered subject, wide empty negative space around",
         "subject at the bottom, wide empty copy space at the top"
-    ])
+    ]
+    copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", copy_space_list)
     
-    niche_insights = st.selectbox("เจาะจงตลาด (Niche)", ["Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data"])
+    niche_list = ["Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data"]
+    niche_insights = st.selectbox("เจาะจงตลาด (Niche)", niche_list)
     
-    color_palette = st.selectbox("โทนสี (Color)", ["Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy"])
-    
-    lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
+    col2_1, col2_2 = st.columns(2)
+    with col2_1:
+        color_palette_list = [
+            "Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy"
+        ]
+        color_palette = st.selectbox("โทนสี (Color)", color_palette_list)
+    with col2_2:
+        lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
 
 st.markdown("---")
 
 col3, col4 = st.columns(2)
+
 with col3:
-    st.subheader("🎬 [กลุ่มที่ 3] การตั้งค่า")
-    aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
+    st.subheader("🎬 [กลุ่มที่ 3] การตั้งค่าไฟล์ภาพ")
+    col3_1, col3_2 = st.columns(2)
+    with col3_1:
+        aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
+    with col3_2:
+        prompt_count = st.number_input("จำนวน Prompts", min_value=10, max_value=200, step=10, value=50)
+
 with col4:
-    st.subheader("⚙️ [กลุ่มที่ 4] ข้อจำกัด")
-    prompt_count = st.number_input("จำนวน Prompts", min_value=10, max_value=200, step=10, value=50)
-    negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, ugly, deformed, blurry eyes, low quality")
+    st.subheader("⚙️ [กลุ่มที่ 4] ข้อจำกัด (Negative Prompt)")
+    negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy")
+
+st.markdown("---")
 
 # --- ปุ่มประมวลผล ---
-if st.button("🚀 Generate Perfect Prompts", use_container_width=True):
+if st.button("🚀 Generate Prompts", use_container_width=True):
     
-    # 1. คัดกรองไอเดีย
     main_idea = idea_manual.strip()
-    preset_text = ""
+    ready_text = ""
+    is_preset_used = False
+    
     if ready_idea != "Auto (ให้ AI สุ่ม)" and not ready_idea.startswith("---"):
-        preset_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
+        ready_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
+        is_preset_used = True
 
-    # 2. ค้นหา Environment อัตโนมัติ
-    target_env = "LIFESTYLE"
-    search_str = (preset_text + " " + main_idea + " " + niche_insights).lower()
-    if any(x in search_str for x in ["office", "business", "corp", "manager"]): target_env = "CORPORATE"
-    elif any(x in search_str for x in ["doctor", "health", "clinic", "medical"]): target_env = "HEALTHCARE"
-    elif any(x in search_str for x in ["yoga", "wellness", "mental", "meditat"]): target_env = "WELLNESS"
-    elif any(x in search_str for x in ["mountain", "beach", "outdoor", "park", "trail"]): target_env = "OUTDOOR"
-    elif any(x in search_str for x in ["cyber", "tech", "data", "hacker", "ai"]): target_env = "CYBER_TECH"
-    elif any(x in search_str for x in ["eco", "sustain", "green", "solar"]): target_env = "ECO_SUSTAINABILITY"
-    elif any(x in search_str for x in ["edu", "study", "learn", "student"]): target_env = "EDUCATION"
-    elif any(x in search_str for x in ["warehouse", "logistics", "delivery", "ecom"]): target_env = "ECOMMERCE_LOGISTICS"
-    elif any(x in search_str for x in ["food", "diet", "cook", "kitchen"]): target_env = "FOOD_DIET"
+    # 🌟 ระบบลบ "วิญญาณคน" อัตโนมัติ (Sanitize)
+    clean_preset_text = ready_text
+    if include_human == "No" and is_preset_used:
+        remove_words = r'\b(human|employee|manager|doctor|patient|person|people|freelancer|worker|family|couple)\b'
+        clean_preset_text = re.sub(remove_words, 'workspace elements', ready_text, flags=re.IGNORECASE).strip()
+        clean_preset_text = re.sub(r'\s+', ' ', clean_preset_text)
+
+    # สร้าง Active Subject
+    if is_preset_used and main_idea:
+        active_subject = f"{clean_preset_text}, {main_idea}"
+    elif is_preset_used:
+        active_subject = f"{clean_preset_text}"
+    elif main_idea:
+        active_subject = f"{main_idea}"
+    else:
+        active_subject = ""
+
+    # ตรวจสอบกลุ่มคน (Group Detection)
+    group_keywords = ['team', 'family', 'couple', 'parents', 'meeting', 'collaboration', 'group', 'colleagues']
+    is_group = any(kw in active_subject.lower() for kw in group_keywords)
+
+    # เช็ค Environment อัตโนมัติ
+    target_env = "LIFESTYLE" 
+    if is_preset_used:
+        if any(tag in ready_idea for tag in ["[1.", "[10."]): target_env = "CORPORATE"
+        elif any(tag in ready_idea for tag in ["[2.", "[4.", "[7."]): target_env = "CYBER_TECH"
+        elif any(tag in ready_idea for tag in ["[5.", "[8."]): target_env = "ECO_SUSTAINABILITY"
+        elif any(tag in ready_idea for tag in ["[6."]): target_env = "HEALTHCARE"
+        elif any(tag in ready_idea for tag in ["[9."]): target_env = "WELLNESS"
+        elif any(tag in ready_idea for tag in ["[11."]): target_env = "EDUCATION"
+        elif any(tag in ready_idea for tag in ["[12."]): target_env = "ECOMMERCE_LOGISTICS"
+        elif any(tag in ready_idea for tag in ["[13."]): target_env = "FOOD_DIET"
+        elif any(tag in ready_idea for tag in ["[3."]): target_env = "LIFESTYLE"
+    else:
+        full_context = (main_idea + " " + niche_insights).lower()
+        if any(x in full_context for x in ["cyber", "ai", "tech", "hacker", "data", "server"]): target_env = "CYBER_TECH"
+        elif any(x in full_context for x in ["eco", "sustainab", "solar", "green", "farm"]): target_env = "ECO_SUSTAINABILITY"
+        elif any(x in full_context for x in ["school", "class", "study", "learn", "student"]): target_env = "EDUCATION"
+        elif any(x in full_context for x in ["delivery", "warehouse", "box", "pack", "logistics"]): target_env = "ECOMMERCE_LOGISTICS"
+        elif any(x in full_context for x in ["food", "cook", "kitchen", "salad", "diet", "meal"]): target_env = "FOOD_DIET"
+        elif any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail"]): target_env = "OUTDOOR"
+        elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital"]): target_env = "HEALTHCARE"
+        elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
+        elif any(x in full_context for x in ["office", "business", "corporate", "bus", "fin", "meeting"]): target_env = "CORPORATE"
+
+    is_photo = "Photorealistic" in art_medium
+    is_vector = "Flat Vector" in art_medium
+    is_3d = "3D Render" in art_medium
+
+    niche_text = f"{niche_insights} concept" if niche_insights != "Auto (ให้ AI สุ่ม)" else ""
+    c_space = copy_space if copy_space != "Auto (ให้ AI จัดวางเอง)" else ""
 
     prompts = []
     
     for i in range(prompt_count):
-        # 🌟 สุ่มข้อมูลพื้นฐาน
-        ethnicity = random.choice(ethnicities)
-        age = random.choice(ages)
-        gender = random.choice(genders)
-        location = random.choice(ENV_DATA[target_env]["locs"])
+        raw_location = random.choice(ENV_GROUPS[target_env])
         
-        # 🌟 ระบบ Smart Lighting & Color
-        light = lighting_style if lighting_style != "Auto (ให้ AI สุ่ม)" else random.choice(ENV_DATA[target_env]["lights"])
-        color = color_palette if color_palette != "Auto (ให้ AI สุ่ม)" else "Natural & True-to-life"
-        
-        # 🌟 ระบบ Physics-Accurate Camera & Framing
-        if copy_space != "Auto (ให้ AI จัดวางเอง)":
-            # กรณีต้องการพื้นที่ว่าง ต้องใช้มุมกว้าง (Wide) และเลนส์คมชัด (f/5.6 - f/8.0)
-            framing = "wide pulled-back shot"
-            lens_spec = "shot on 35mm lens, f/8.0"
-            style_suffix = "high-end commercial stock photography, clear environment details"
-            active_copy_space = copy_space
+        # 🌟 Dynamic Stylize ป้องกัน Vector รกเกินไป
+        if is_vector:
+            stylize_value = random.randint(50, 100)
+        elif is_3d:
+            stylize_value = random.randint(100, 200)
         else:
-            # กรณีปกติ สุ่มมุมมอง และจับคู่เลนส์ให้สมบูรณ์แบบ
-            choice = random.choice([
-                ("medium shot", "shot on 50mm lens, f/2.8", "shallow depth of field, beautifully blurred background"),
-                ("close-up portrait", "shot on 85mm lens, f/1.8", "soft bokeh, shallow depth of field"),
-                ("eye-level shot", "shot on 35mm lens, f/4.0", "natural depth of field")
-            ])
-            framing, lens_spec, style_suffix = choice
-            active_copy_space = ""
+            stylize_value = random.randint(100, 250)
+        
+        # 🌟 จัดการสี
+        palette_text = ""
+        if color_palette == "Auto (ให้ AI สุ่ม)":
+            if target_env == "CORPORATE": auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
+            elif target_env == "HEALTHCARE": auto_c = random.choice(["Clean White & Blue", "Soft Pastels", "Neutral & Clean"])
+            elif target_env == "WELLNESS": auto_c = random.choice(["Warm Earth Tones", "Muted & Earthy", "Soft Pastels"])
+            elif target_env == "OUTDOOR": auto_c = random.choice(["Natural & True-to-life", "Vibrant & Punchy"])
+            elif target_env == "CYBER_TECH": auto_c = random.choice(["Cool Teal & Grey", "High-Contrast Black & Gold"])
+            elif target_env == "ECO_SUSTAINABILITY": auto_c = random.choice(["Natural & True-to-life", "Muted & Earthy"])
+            elif target_env == "EDUCATION": auto_c = random.choice(["Bright & Airy", "Neutral & Clean"])
+            elif target_env == "ECOMMERCE_LOGISTICS": auto_c = random.choice(["Neutral & Clean", "Bright & Airy"])
+            elif target_env == "FOOD_DIET": auto_c = random.choice(["Warm & Inviting", "Natural & True-to-life"])
+            else: auto_c = random.choice(["Warm & Inviting", "Muted Scandinavian"])
+            palette_text = f"using a {auto_c} color palette"
+        else:
+            palette_text = f"using a {color_palette} color palette"
 
-        # 🌟 ระบบ Smart Action (Sanitize)
+        prompt_tags = []
+        lens_spec = ""
+        
+        # 🌟 ลอจิก Framing + Lens Physics Synchronization
         if include_human == "Yes":
-            # ตรวจสอบว่าเป็นกลุ่มหรือไม่
-            is_group = any(kw in (preset_text + " " + main_idea).lower() for kw in ["team", "group", "family", "meeting", "couple"])
-            subject = f"a diverse group of people" if is_group else f"a {age} {ethnicity} {gender}"
-            
-            # รวม Action
-            action = preset_text if preset_text else ACTION_DATA[target_env]
-            if main_idea: action += f", {main_idea}"
-            
-            subject_part = f"{framing} of {subject}, engaged in {action}"
-        else:
-            # 🌟 โหมดไม่มีคน: แก้ไขคำกริยาให้เป็นกลาง
-            obj = preset_text if preset_text else OBJECT_GROUPS[target_env]
-            if main_idea: obj += f", {main_idea}"
-            # ตัดคำกริยาที่ใช้คนออก
-            obj = re.sub(r'\b(holding|preparing|clicking|writing|looking|working)\b', '', obj, flags=re.IGNORECASE).strip()
-            
-            subject_part = f"flat lay photography, top-down view of {obj}, perfectly organized on a surface"
-            lens_spec = "shot on 35mm lens, f/8.0"
-            style_suffix = "high-end commercial stock photography, sharp focus across entire layout"
+            if c_space: # ถ้าขอพื้นที่ว่าง ต้องถอยเลนส์มุมกว้าง
+                framing = "wide pulled-back shot"
+                lens_spec = "35mm lens, f/5.6"
+            else: # สุ่มมุมกล้องและจับคู่เลนส์ที่ถูกต้องตามหลักฟิสิกส์
+                framing_choice = random.choice([
+                    ("wide shot", "35mm lens, f/5.6"), 
+                    ("medium shot", "50mm lens, f/2.8"), 
+                    ("close-up portrait", "85mm lens, f/1.8")
+                ])
+                framing = framing_choice[0]
+                lens_spec = framing_choice[1]
 
-        # 🌟 ประกอบร่าง
-        final_prompt = f"/imagine prompt: {subject_part}, at {location}, {active_copy_space}, using a {color} color palette, lit by {light}, {lens_spec}, {style_suffix}, photorealistic, --style raw --ar {aspect_ratio} --v 7"
+            clothes = "modern smart casual"
+            if target_env in ["CORPORATE", "CYBER_TECH"]: clothes = "professional business attire"
+            elif target_env == "HEALTHCARE": clothes = "medical uniform"
+            elif target_env == "ECOMMERCE_LOGISTICS": clothes = "warehouse uniform"
+            elif target_env == "FOOD_DIET": clothes = "chef apron"
+            elif target_env == "OUTDOOR": clothes = "outdoor activewear"
+            
+            sub_lower = active_subject.lower()
+            if any(kw in sub_lower for kw in ['couple', 'two people']):
+                demo_str = f"a couple dressed in {clothes}"
+            elif any(kw in sub_lower for kw in ['family', 'parents']):
+                demo_str = f"a diverse family dressed in {clothes}"
+            elif is_group:
+                demo_str = f"a diverse group of professionals dressed in {clothes}" if target_env == "CORPORATE" else f"a diverse group of people dressed in {clothes}"
+            else:
+                demo_str = f"a {random.choice(ages)} {random.choice(ethnicities)} {random.choice(genders)} dressed in {clothes}"
+            
+            if is_preset_used:
+                action_str = f"engaged in {ready_text}"
+                if main_idea: action_str += f", portraying {main_idea}"
+            else:
+                action_str = random.choice(ACTION_GROUPS[target_env])
+                if main_idea: action_str += f", illustrating {main_idea}"
+            
+            if is_photo:
+                prompt_tags.append(f"{framing} of {demo_str}")
+            elif is_vector:
+                prompt_tags.append(f"clean flat vector illustration of {demo_str}")
+            else:
+                prompt_tags.append(f"3D isometric render of {demo_str}")
+                
+            prompt_tags.append(action_str)
+
+        else:
+            # 🌟 Flat Lay Logic แบบสมบูรณ์
+            if active_subject:
+                obj_focus = f"everyday objects and elements related to '{active_subject}'"
+            else:
+                obj_focus = random.choice(OBJECT_GROUPS[target_env])
+            
+            if is_photo:
+                prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
+                prompt_tags.append("knolling aesthetic, perfectly organized")
+                lens_spec = "35mm lens, f/8.0" # เลนส์คมกริบชัดลึก
+            elif is_vector:
+                prompt_tags.append(f"top-down flat vector graphic featuring {obj_focus}")
+            else:
+                prompt_tags.append(f"top-down orthographic 3D render featuring {obj_focus}")
+
+        # Niche
+        if niche_text: prompt_tags.append(niche_text)
         
-        if negative_prompt.strip():
-            final_prompt += f" --no {negative_prompt.strip()}"
+        # 🌟 ระบบ Background และการแยกประเภทสื่ออย่างเด็ดขาด
+        if is_photo:
+            if include_human == "No":
+                prompt_tags.append(f"arranged flat on a surface within a {raw_location}")
+            else:
+                prompt_tags.append(f"set in a {raw_location}")
+        else:
+            # Vector/3D ตัดสถานที่จริงทิ้ง บังคับฉากหลังสตูดิโอ
+            prompt_tags.append("isolated on a clean solid white background")
+            
+        # Composition & Palette
+        if c_space: prompt_tags.append(c_space)
+        if palette_text: prompt_tags.append(palette_text)
+        
+        # 🌟 ระบบแสง (Lighting) แยกขาดออกจากกัน 100%
+        if is_photo:
+            if lighting_style == "Auto (ให้ AI สุ่ม)":
+                if target_env == "CORPORATE": light = random.choice(["Clean Office Light", "Professional Studio Light"])
+                elif target_env == "HEALTHCARE": light = random.choice(["Bright Clinical Light", "Clean White Light"])
+                elif target_env == "WELLNESS": light = random.choice(["Soft Natural Light", "Dreamy Diffused Light"])
+                elif target_env == "OUTDOOR": light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight"])
+                elif target_env == "CYBER_TECH": light = random.choice(["Modern Neon Accent", "Cinematic Dark Lighting"])
+                else: light = random.choice(["Warm Ambient Light", "Soft Natural Light"])
+                prompt_tags.append(f"lit by {light}")
+            elif lighting_style != "Auto (ให้ AI สุ่ม)":
+                prompt_tags.append(f"lit by {lighting_style}")
+        elif is_3d:
+            prompt_tags.append("soft global illumination, clean studio lighting")
+        # Vector ไม่ใส่แท็กแสงเลย เพื่อให้แบนที่สุด
+
+        # 🌟 Camera & Style Suffix
+        if is_photo:
+            prompt_tags.append(lens_spec)
+            if include_human == "Yes":
+                prompt_tags.append("high-end commercial stock photography, photorealistic, --style raw")
+            else:
+                prompt_tags.append("high-end commercial stock photography, photorealistic, sharp focus across entire layout, --style raw")
+        elif is_vector:
+            prompt_tags.append("corporate memphis style, minimalist UI/UX aesthetic, no gradients, 2d")
+        elif is_3d:
+            prompt_tags.append("soft smooth clay render, octane render, blender")
+
+        clean_tags = [p for p in prompt_tags if p]
+        clean_base = ", ".join(clean_tags)
+        
+        # ประกอบเป็นประโยคสุดท้าย
+        final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --v 7"
+            
+        # 🌟 Negative Prompt
+        neg_prompt = negative_prompt.strip()
+        if is_vector and not "gradient" in neg_prompt:
+            neg_prompt += ", gradient, 3d, realistic, shadow, photographic"
+        elif is_3d and not "photo" in neg_prompt:
+            neg_prompt += ", photo, 2d, flat vector"
+            
+        if neg_prompt:
+            final_prompt += f" --no {neg_prompt}"
             
         prompts.append(final_prompt)
 
-    # --- แสดงผล ---
-    st.success(f"✅ สมบูรณ์แบบ 100%! สร้างสำเร็จ {prompt_count} Prompts")
+    # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
+    prompt_text = "\n".join(prompts)
+    
+    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (โค้ดนี้คือ The Masterpiece ไร้จุดบอด 100%!)")
+    
+    st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
     for p in prompts[:5]:
         st.code(p, language="text")
 
+    text_buffer = io.BytesIO(prompt_text.encode('utf-8'))
     st.download_button(
         label="💾 ดาวน์โหลดไฟล์ .txt สำหรับ Midjourney",
-        data=io.BytesIO("\n".join(prompts).encode('utf-8')),
-        file_name="midjourney_stock_perfection.txt",
+        data=text_buffer,
+        file_name="midjourney_master_production.txt",
         mime="text/plain",
         use_container_width=True
     )
