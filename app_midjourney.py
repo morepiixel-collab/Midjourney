@@ -54,11 +54,12 @@ ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mix
 ages = ["young adult", "middle-aged", "senior"]
 genders = ["man", "woman"] 
 
-# --- UI Layout ---
-col1, col2 = st.columns(2)
+# --- UI Layout (ปรับปรุงใหม่ตาม Flow 1 -> 2 -> 3) ---
+
+st.subheader("1️⃣ กำหนดเนื้อหาภาพ (Subject & Story)")
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.subheader("🎯 [กลุ่มที่ 1] ไอเดียและรูปแบบ (Subject)")
     idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="", help="พิมพ์คีย์เวิร์ดหลักที่ต้องการ")
     
     ready_ideas_list = [
@@ -78,11 +79,27 @@ with col1:
         "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] diverse family cooking dinner together", "[13.3 Food] young couple cooking together"
     ]
     ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list)
-    include_human = st.radio("มีมนุษย์ (Include Human)", ["Yes", "No"], horizontal=True)
 
 with col2:
-    st.subheader("💎 [กลุ่มที่ 2] การจัดองค์ประกอบ (Composition & Style)")
-    
+    include_human = st.radio("มีมนุษย์ (Include Human)", ["Yes", "No"], horizontal=True)
+    demo_control = st.selectbox("ล็อกเชื้อชาติ/อายุ (Demographics)", [
+        "Auto (ให้ AI สุ่ม)", "Asian Only", "Caucasian Only", "Black Only", "Seniors Only", "Young Adults Only"
+    ])
+
+with col3:
+    emotion_control = st.selectbox("อารมณ์/สีหน้า (Emotion)", [
+        "Auto (สุ่มตามสถานการณ์)", "Natural warm smile", "Candid & Authentic", "Deeply focused", "Relaxed & Calm", "Excited & Joyful"
+    ])
+    camera_angle = st.selectbox("มุมกล้อง (Camera Angle)", [
+        "Auto (ให้ AI สุ่มมุมกล้อง)", "Eye-level shot", "High angle / Top-down shot", "Low angle / Hero shot", "Over-the-shoulder shot"
+    ])
+
+st.markdown("---")
+st.subheader("2️⃣ การจัดองค์ประกอบ (Composition & Style)")
+
+col4, col5, col6, col7 = st.columns(4)
+
+with col4:
     copy_space_list = [
         "Auto (ให้ AI จัดวางเอง)",
         "subject positioned on the right, wide empty copy space on the left",
@@ -91,34 +108,33 @@ with col2:
         "subject at the bottom, wide empty copy space at the top"
     ]
     copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", copy_space_list)
-    
+
+with col5:
     niche_list = ["Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data"]
     niche_insights = st.selectbox("เจาะจงตลาด (Niche)", niche_list)
-    
-    col2_1, col2_2 = st.columns(2)
-    with col2_1:
-        color_palette_list = [
-            "Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy"
-        ]
-        color_palette = st.selectbox("โทนสี (Color)", color_palette_list)
-    with col2_2:
-        lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
+
+with col6:
+    color_palette_list = [
+        "Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy"
+    ]
+    color_palette = st.selectbox("โทนสี (Color)", color_palette_list)
+
+with col7:
+    lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
 
 st.markdown("---")
+st.subheader("3️⃣ ตั้งค่าไฟล์และขั้นสูง (Advanced Settings)")
 
-col3, col4 = st.columns(2)
-
-with col3:
-    st.subheader("🎬 [กลุ่มที่ 3] การตั้งค่าไฟล์ภาพ")
-    col3_1, col3_2 = st.columns(2)
-    with col3_1:
-        aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
-    with col3_2:
-        prompt_count = st.number_input("จำนวน Prompts", min_value=10, max_value=200, step=10, value=50)
-
-with col4:
-    st.subheader("⚙️ [กลุ่มที่ 4] ข้อจำกัด (Negative Prompt)")
-    negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy, illustration, 3d, vector")
+with st.expander("⚙️ เปิดเพื่อตั้งค่า สัดส่วนภาพ, จำนวน, และ Negative Prompt", expanded=False):
+    col8, col9 = st.columns(2)
+    with col8:
+        col8_1, col8_2 = st.columns(2)
+        with col8_1:
+            aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
+        with col8_2:
+            prompt_count = st.number_input("จำนวน Prompts", min_value=10, max_value=200, step=10, value=50)
+    with col9:
+        negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy, illustration, 3d, vector")
 
 st.markdown("---")
 
@@ -230,16 +246,25 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             elif target_env == "FOOD_DIET": clothes = "chef apron"
             elif target_env == "OUTDOOR": clothes = "outdoor activewear"
             
+            # 🌟 ล็อก Demographics
+            if demo_control == "Asian Only": selected_eth, selected_age = "Asian", random.choice(ages)
+            elif demo_control == "Caucasian Only": selected_eth, selected_age = "Caucasian", random.choice(ages)
+            elif demo_control == "Black Only": selected_eth, selected_age = "Black", random.choice(ages)
+            elif demo_control == "Seniors Only": selected_eth, selected_age = random.choice(ethnicities), "senior"
+            elif demo_control == "Young Adults Only": selected_eth, selected_age = random.choice(ethnicities), "young adult"
+            else: selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
+
             sub_lower = active_subject.lower()
             if any(kw in sub_lower for kw in ['couple', 'two people']):
-                demo_str = f"a couple dressed in {clothes}"
+                demo_str = f"a {selected_age} couple dressed in {clothes}"
             elif any(kw in sub_lower for kw in ['family', 'parents']):
                 demo_str = f"a diverse family dressed in {clothes}"
             elif is_group:
                 demo_str = f"a diverse group of professionals dressed in {clothes}" if target_env == "CORPORATE" else f"a diverse group of people dressed in {clothes}"
             else:
-                demo_str = f"a {random.choice(ages)} {random.choice(ethnicities)} {random.choice(genders)} dressed in {clothes}"
+                demo_str = f"a {selected_age} {selected_eth} {random.choice(genders)} dressed in {clothes}"
             
+            # 🌟 การกระทำ
             if is_preset_used:
                 action_str = f"engaged in {ready_text}"
                 if main_idea: action_str += f", portraying {main_idea}"
@@ -247,8 +272,14 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 action_str = random.choice(ACTION_GROUPS[target_env])
                 if main_idea: action_str += f", illustrating {main_idea}"
             
+            # 🌟 ล็อกอารมณ์/สีหน้า (Emotion)
+            if emotion_control == "Auto (สุ่มตามสถานการณ์)":
+                emotion_str = random.choice(["candid and authentic", "natural subtle smile", "deeply focused"])
+            else:
+                emotion_str = emotion_control
+                
             prompt_tags.append(f"{framing} of {demo_str}")
-            prompt_tags.append(action_str)
+            prompt_tags.append(f"{action_str}, showing a {emotion_str} expression")
 
         else:
             # 🌟 Flat Lay Logic แบบสมบูรณ์
@@ -264,6 +295,10 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         # Niche
         if niche_text: prompt_tags.append(niche_text)
         
+        # 🌟 ระบบ มุมกล้อง (Camera Angle)
+        if camera_angle != "Auto (ให้ AI สุ่มมุมกล้อง)":
+            prompt_tags.append(camera_angle)
+
         # 🌟 ระบบ Background 
         if include_human == "No":
             prompt_tags.append(f"arranged flat on a surface within a {raw_location}")
