@@ -26,7 +26,7 @@ angles = ["eye-level shot", "medium shot", "slight high angle", "wide angle shot
 action_stories = ["working focused on a project", "collaborating with a team", "showing success on screen", "engaged in deep discussion", "mentoring with a smile", "making a decisive gesture"]
 lenses = ["shot on 35mm lens, f/8.0", "shot on 50mm lens, f/2.8", "shot on 85mm lens, f/1.8"]
 
-# ปรับสไตล์ให้เข้ากับงาน Stock Photo ที่ต้องการความสมจริงและมีมิติ (Depth of field)
+# ปรับสไตล์ให้เข้ากับงาน Stock Photo ที่ต้องการความสมจริงและมีมิติ
 fixed_style = "high-end commercial stock photography, authentic, clean composition, negative space for text, photorealistic, blurred background, --style raw --v 7"
 
 def get_variety_list(source_list, count):
@@ -42,7 +42,6 @@ with col1:
     idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="digital nomad lifestyle")
     idea_mode = st.selectbox("โหมดไอเดียหลัก", ["None (ไม่ระบุ)", "Random from All Ideas (สุ่มจากคลัง MASTER POOL)"])
     
-    # รายการไอเดียสำเร็จรูป (ย่อตัวแปรเพื่อความสะอาดของโค้ด)
     ready_ideas_list = [
         "None (ไม่ระบุ)", 
         "--- 📊 1. Business Micro-Situations ---", "[1.1 Business] employee burnout at desk", "[1.2 Business] manager giving feedback to employee", 
@@ -54,22 +53,7 @@ with col1:
         "--- 🤖 7. Future Tech (General) ---", "[7.1 Tech] transparent holographic interface", "[7.2 Tech] VR headset data visualization",
         "--- 🌍 8. Sustainability & Eco ---", "[8.1 Eco] holding small plant", "[8.2 Eco] charging electric vehicle",
         "--- 🧘‍♀️ 9. Mental Health & Wellness ---", "[9.1 Wellness] meditating peaceful room", "[9.2 Wellness] writing gratitude journal",
-        "--- 💼 10. Corporate Leadership ---", "[10.1 Business] executive presentation", "[10.2 Business] shaking hands deal",
-        "--- 🎓 11. E-Learning ---", "[11.1 Edu] online lecture on laptop", "[11.2 Edu] notes during masterclass",
-        "--- 🚚 12. E-Commerce & Logistics ---", "[12.1 Ecom] clicking Buy Now phone", "[12.2 Ecom] receiving delivery box",
-        "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] drinking green detox smoothie",
-        "--- 👨‍👩‍👧‍👦 14. Modern Family ---", "[14.1 Family] diverse family laughing sofa", "[14.2 Family] parents helping homework",
-        "--- 🏢 15. Corporate Office Space ---", "[15.1 Office] modern startup workspace plants", "[15.2 Office] minimalist corporate office",
-        "--- 🎨 16. Tech Network Concepts ---", "[16.1 Concept] cyber security data stream", "[16.2 Concept] neural network AI brain",
-        "--- 👔 17. Professional Portraits ---", "[17.1 Portrait] female entrepreneur smiling", "[17.2 Portrait] male software engineer working",
-        "--- 💼 18. Business & Work ---", "[18.1 BUS] Remote Work", "[18.2 BUS] Entrepreneurship",
-        "--- 🎓 19. Education ---", "[19.1 EDU] virtual classroom", "[19.2 EDU] online course",
-        "--- 🏥 20. Health & Fitness ---", "[20.1 HEA] Fitness Motivation", "[20.2 HEA] CrossFit Workouts",
-        "--- 🌿 21. Nature & Landscapes ---", "[21.1 NAT] Nature Photography", "[21.2 NAT] Cloud Formations",
-        "--- 🔬 22. Science & Nature ---", "[22.1 SCI] Climate Change Awareness", "[22.2 SCI] Environmental Conservation Efforts",
-        "--- ⚽ 23. Sports & Outdoors ---", "[23.1 SPO] Fit Families", "[23.2 SPO] Women in Sports",
-        "--- 💻 24. Technology ---", "[24.1 TEC] Artificial Intelligence", "[24.2 TEC] Cloud Computing",
-        "--- ✈️ 25. Travel & Tourism ---", "[25.1 TRA] City Break", "[25.2 TRA] Adventure Tour"
+        "--- 💼 10. Corporate Leadership ---", "[10.1 Business] executive presentation", "[10.2 Business] shaking hands deal"
     ]
     ready_idea = st.selectbox("ไอเดียสำเร็จรูป", ready_ideas_list)
     link_logic = st.selectbox("การเชื่อมโยงเนื้อหา", ["Link with Main Prompt", "Independent (แต่งประโยคใหม่จากหัวข้อที่เลือกเท่านั้น)"])
@@ -85,12 +69,21 @@ with col2:
     lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["None (ไม่ระบุ)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light"])
 
 st.markdown("---")
-st.subheader("🎬 [กลุ่มที่ 3] การตั้งค่าไฟล์ภาพและการส่งออก")
+
+# แบ่งหน้าจอเป็น 2 ฝั่งสำหรับ Setting และ Advanced
 col3, col4 = st.columns(2)
+
 with col3:
-    aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
-with col4:
+    st.subheader("🎬 [กลุ่มที่ 3] การตั้งค่าไฟล์ภาพและการส่งออก")
+    aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1", "4:3", "3:4"], index=0)
     prompt_count = st.slider("จำนวน Prompts ที่ต้องการ", min_value=10, max_value=100, step=10, value=50)
+
+with col4:
+    st.subheader("⚙️ [กลุ่มที่ 4] ตั้งค่าขั้นสูง (Advanced Parameters)")
+    chaos_value = st.slider("ความหลากหลาย (Chaos: --c)", min_value=0, max_value=100, value=0, step=1, help="ค่า 0 คือคุมโทนให้เหมือนกัน ค่าสูงขึ้นคือปล่อยให้ AI สุ่มมุมมองแปลกใหม่มากขึ้น")
+    negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (Negative Prompt: --no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy", help="คำเหล่านี้จะถูกใส่เข้าไปหลังพารามิเตอร์ --no เพื่อป้องกันสิ่งที่ไม่ต้องการในงานสต็อก")
+
+st.markdown("---")
 
 # --- ปุ่มประมวลผล ---
 if st.button("🚀 Generate Prompts", use_container_width=True):
@@ -161,25 +154,38 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         parts.append("clean commercial style")
         
         clean_base = ", ".join([p for p in parts if p])
+        
+        # จัดการพารามิเตอร์หลัก
         final_prompt = f"/imagine prompt: {clean_base}, at {final_location}, {dist_lenses[i]}, {fixed_style} --ar {aspect_ratio} --s {stylize_value}"
+        
+        # เพิ่มพารามิเตอร์ Chaos ถ้ามีค่ามากกว่า 0
+        if chaos_value > 0:
+            final_prompt += f" --c {chaos_value}"
+            
+        # เพิ่ม Negative Prompt ถ้ามีการกรอกข้อความไว้
+        if negative_prompt.strip():
+            final_prompt += f" --no {negative_prompt.strip()}"
+            
         prompts.append(final_prompt)
 
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สมบูรณ์แบบ 100%! สร้างสำเร็จจำนวน {prompt_count} Prompts")
+    st.success(f"✅ สร้างสำเร็จจำนวน {prompt_count} Prompts พร้อมการตั้งค่าขั้นสูง!")
     
-    # แสดงตัวอย่าง
-    with st.expander("👀 ดูตัวอย่าง Prompts (5 รายการแรก)"):
-        for p in prompts[:5]:
-            st.code(p, language="text")
+    # แสดงตัวอย่าง พร้อมปุ่มคัดลอกในตัว
+    st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
+    st.info("💡 ทิป: นำเมาส์ไปชี้ที่มุมขวาบนของกล่องข้อความแต่ละอัน จะมีไอคอน 'Copy' ปรากฏขึ้นมาให้กดคัดลอกได้ทันทีครับ")
+    
+    for p in prompts[:5]:
+        st.code(p, language="text")
 
-    # ปุ่มดาวน์โหลด
+    # ปุ่มดาวน์โหลดไฟล์เต็ม
     text_buffer = io.BytesIO(prompt_text.encode('utf-8'))
     st.download_button(
-        label="💾 ดาวน์โหลดไฟล์ .txt",
+        label="💾 ดาวน์โหลดไฟล์ .txt ทั้งหมด",
         data=text_buffer,
-        file_name="midjourney_100_percent_perfect.txt",
+        file_name="midjourney_pro_prompts.txt",
         mime="text/plain",
         use_container_width=True
     )
