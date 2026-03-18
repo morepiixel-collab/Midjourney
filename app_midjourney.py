@@ -20,8 +20,8 @@ ENV_GROUPS = {
     "EDUCATION": ["modern university classroom", "bright digital learning hub", "quiet modern library", "interactive e-learning studio"],
     "ECOMMERCE_LOGISTICS": ["automated modern warehouse", "clean distribution center", "bright packaging facility", "logistics control center"],
     "FOOD_DIET": ["bright modern home kitchen", "rustic wooden dining table", "organic food market stall", "cozy dining room"],
-    "HOLIDAY_INDOOR": ["cozy decorated living room", "festive dining room", "warm inviting home interior", "decorated event hall"],
-    "HOLIDAY_OUTDOOR": ["snowy winter street", "festive town square", "decorated outdoor patio", "autumn park landscape"]
+    "HOLIDAY_INDOOR": ["cozy decorated living room", "festive dining room", "warm inviting home interior", "decorated event hall", "traditional festive indoor setting"],
+    "HOLIDAY_OUTDOOR": ["snowy winter street", "festive town square", "decorated outdoor patio", "autumn park landscape", "vibrant festival street"]
 }
 
 # 🌟 2. ท่าทางแบบสุ่ม (Action / What)
@@ -36,7 +36,7 @@ ACTION_GROUPS = {
     "EDUCATION": ["taking detailed academic notes", "reading a book attentively", "focusing intensely on e-learning materials"],
     "ECOMMERCE_LOGISTICS": ["scanning inventory barcodes", "organizing delivery packages", "checking logistics data"],
     "FOOD_DIET": ["preparing fresh healthy ingredients", "choosing organic vegetables carefully", "enjoying a nutritious balanced meal"],
-    "HOLIDAY": ["celebrating joyfully", "holding festive decorations", "enjoying the holiday atmosphere", "exchanging seasonal gifts"]
+    "HOLIDAY": ["celebrating joyfully", "holding festive decorations", "enjoying the holiday atmosphere", "exchanging seasonal gifts", "participating in cultural traditions"]
 }
 
 # 🌟 3. สิ่งของแบบสุ่ม (ภาพไม่มีคน / Flat Lay)
@@ -51,11 +51,11 @@ OBJECT_GROUPS = {
     "EDUCATION": ["open academic textbooks, highlighters, and a modern laptop", "neatly stacked notebooks, a premium pen, and digital learning tools"],
     "ECOMMERCE_LOGISTICS": ["sturdy cardboard boxes, shipping labels, and a barcode scanner", "premium product packaging and a logistics tracking tablet"],
     "FOOD_DIET": ["fresh organic vegetables and rustic wooden cooking utensils", "colorful healthy ingredients, superfood seeds, and fresh fruits"],
-    "HOLIDAY": ["festive holiday decorations and seasonal elements", "wrapped gifts, ribbons, and seasonal ornaments", "holiday greeting cards and festive treats"]
+    "HOLIDAY": ["festive holiday decorations and seasonal elements", "wrapped gifts, ribbons, and cultural ornaments", "holiday greeting cards and festive treats"]
 }
 
 # 🌟 4. ข้อมูลวันสำคัญ (Holidays)
-HOLIDAYS_DICT = {
+WESTERN_HOLIDAYS_DICT = {
     "New Year's Day (1 Jan)": "New Year's Day celebration, festive new year atmosphere, confetti, sparkling champagne",
     "Valentine's Day (14 Feb)": "Valentine's Day romantic concept, red roses, heart shapes, love and romance atmosphere",
     "St. Patrick's Day (17 Mar)": "St. Patrick's Day celebration, green clover theme, shamrocks, festive Irish holiday",
@@ -68,6 +68,17 @@ HOLIDAYS_DICT = {
     "Black Friday / Cyber Monday (Nov)": "Black Friday mega sale concept, shopping bags, e-commerce promotions, modern retail",
     "Christmas (25 Dec)": "Christmas winter wonderland, cozy warm lighting, decorated christmas tree, wrapped gifts",
     "New Year's Eve (31 Dec)": "New Year's Eve countdown party, glamorous evening, fireworks, elegant celebration"
+}
+
+ASIAN_HOLIDAYS_DICT = {
+    "Lunar New Year / Chinese New Year (Jan/Feb)": "Lunar New Year celebration, traditional red and gold decorations, paper lanterns, festive Asian atmosphere",
+    "Songkran Festival / Thai New Year (13-15 Apr)": "Songkran water festival, joyful water splashing, vibrant Thai summer celebration",
+    "Golden Week / Sakura Season (Spring/Apr-May)": "Spring cherry blossom season, beautiful blooming sakura trees, vibrant Japanese spring, peaceful nature",
+    "Dragon Boat Festival (May/Jun)": "Dragon Boat Festival, traditional zongzi, energetic dragon boat racing, Asian cultural heritage",
+    "Mid-Autumn Festival / Mooncake Festival (Sep/Oct)": "Mid-Autumn festival, glowing paper lanterns, delicious mooncakes, family gathering under the full moon",
+    "Chuseok / Korean Thanksgiving (Sep/Oct)": "Chuseok Korean harvest festival, traditional hanbok, rich autumn harvest, family gathering",
+    "Diwali / Festival of Lights (Oct/Nov)": "Diwali festival of lights, glowing diya lamps, colorful rangoli, festive Indian celebration",
+    "Loy Krathong Festival (Nov)": "Loy Krathong festival, floating glowing krathongs on the river, beautiful night time celebration, Thai cultural heritage"
 }
 
 ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mixed-race", "South Asian"]
@@ -127,9 +138,14 @@ with col1:
             "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] diverse family cooking dinner together", "[13.3 Food] young couple cooking together"
         ]
         ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list)
+        holiday_region = None
         holiday_choice = None
     else:
-        holiday_choice = st.selectbox("📅 เลือกวันสำคัญ (European/Western Holidays)", list(HOLIDAYS_DICT.keys()))
+        holiday_region = st.radio("🌍 เลือกโซนเทศกาล (Region):", ["Western / International", "Asian Holidays"], horizontal=True)
+        if "Western" in holiday_region:
+            holiday_choice = st.selectbox("📅 เลือกวันสำคัญ (Western Holidays)", list(WESTERN_HOLIDAYS_DICT.keys()))
+        else:
+            holiday_choice = st.selectbox("📅 เลือกวันสำคัญ (Asian Holidays)", list(ASIAN_HOLIDAYS_DICT.keys()))
         ready_idea = "Auto (ให้ AI สุ่ม)"
 
     idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="", help="พิมพ์คีย์เวิร์ดหลักที่ต้องการ (เป็นภาษาอังกฤษจะดีที่สุด)")
@@ -164,17 +180,17 @@ with col4:
     copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", copy_space_list)
 
 with col5:
-    niche_list = ["Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data", "Holiday Marketing"]
+    niche_list = ["Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data", "Holiday Marketing", "Cultural Heritage"]
     niche_insights = st.selectbox("เจาะจงตลาด (Niche)", niche_list)
 
 with col6:
     color_palette_list = [
-        "Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy", "Festive Red & Gold", "Winter Blue & Silver"
+        "Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy", "Festive Red & Gold", "Winter Blue & Silver", "Vibrant Cultural Colors"
     ]
     color_palette = st.selectbox("โทนสี (Color)", color_palette_list)
 
 with col7:
-    lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light", "Warm Cozy Bokeh Lighting"])
+    lighting_style = st.selectbox("สไตล์แสง (Lighting)", ["Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light", "Warm Cozy Bokeh Lighting", "Cinematic Festival Lighting"])
 
 st.markdown("---")
 st.subheader("3️⃣ ตั้งค่าไฟล์และขั้นสูง (Advanced Settings)")
@@ -202,7 +218,10 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     
     # ดึงค่า Preset หรือ Holiday
     if is_holiday_mode:
-        ready_text = HOLIDAYS_DICT[holiday_choice]
+        if "Western" in holiday_region:
+            ready_text = WESTERN_HOLIDAYS_DICT[holiday_choice]
+        else:
+            ready_text = ASIAN_HOLIDAYS_DICT[holiday_choice]
         is_preset_used = True
     elif ready_idea != "Auto (ให้ AI สุ่ม)" and not ready_idea.startswith("---"):
         ready_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
@@ -218,14 +237,14 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     else:
         active_subject = "people" if include_human == "Yes" else "objects"
 
-    group_keywords = ['team', 'family', 'couple', 'parents', 'meeting', 'collaboration', 'group', 'colleagues', 'party', 'celebration']
+    group_keywords = ['team', 'family', 'couple', 'parents', 'meeting', 'collaboration', 'group', 'colleagues', 'party', 'celebration', 'gathering']
     is_group = any(kw in active_subject.lower() for kw in group_keywords)
 
     # 🌟 ตรวจจับสภาพแวดล้อมอัตโนมัติ (Environment Routing)
     target_env = "LIFESTYLE" 
     
     if is_holiday_mode:
-        target_env = "HOLIDAY_INDOOR" if any(x in active_subject.lower() for x in ["indoor", "room", "dinner", "party", "home", "tree"]) else "HOLIDAY_OUTDOOR"
+        target_env = "HOLIDAY_INDOOR" if any(x in active_subject.lower() for x in ["indoor", "room", "dinner", "party", "home", "tree", "diya"]) else "HOLIDAY_OUTDOOR"
     elif is_preset_used and not is_holiday_mode:
         if any(tag in ready_idea for tag in ["[1.", "[10."]): target_env = "CORPORATE"
         elif any(tag in ready_idea for tag in ["[2.", "[4.", "[7."]): target_env = "CYBER_TECH"
@@ -243,7 +262,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         elif any(x in full_context for x in ["school", "class", "study", "learn", "student"]): target_env = "EDUCATION"
         elif any(x in full_context for x in ["delivery", "warehouse", "box", "pack", "logistics"]): target_env = "ECOMMERCE_LOGISTICS"
         elif any(x in full_context for x in ["food", "cook", "kitchen", "salad", "diet", "meal"]): target_env = "FOOD_DIET"
-        elif any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail"]): target_env = "OUTDOOR"
+        elif any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "river", "sakura"]): target_env = "OUTDOOR"
         elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital"]): target_env = "HEALTHCARE"
         elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
         elif any(x in full_context for x in ["office", "business", "corporate", "bus", "fin", "meeting"]): target_env = "CORPORATE"
@@ -268,7 +287,9 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         # 🎨 โทนสี (Color Palette)
         palette_text = ""
         if color_palette == "Auto (ให้ AI สุ่ม)":
-            if is_holiday_mode: auto_c = random.choice(["Warm & Inviting", "Festive Red & Gold", "Winter Blue & Silver"])
+            if is_holiday_mode:
+                if "Asian" in holiday_region: auto_c = random.choice(["Vibrant Cultural Colors", "Warm & Inviting", "Festive Red & Gold"])
+                else: auto_c = random.choice(["Warm & Inviting", "Festive Red & Gold", "Winter Blue & Silver"])
             elif target_env == "CORPORATE": auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
             elif target_env == "HEALTHCARE": auto_c = random.choice(["Clean White & Blue", "Soft Pastels", "Neutral & Clean"])
             elif target_env == "WELLNESS": auto_c = random.choice(["Warm Earth Tones", "Muted & Earthy", "Soft Pastels"])
@@ -294,7 +315,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         # 🧑 2. หากเป็นภาพมนุษย์ (Include Human = Yes)
         if include_human == "Yes":
             
-            # --- 2.1 มุมกล้องและการจัดเฟรม (How) - การันตีหน้าชัดหลังเบลอ ---
+            # --- 2.1 มุมกล้องและการจัดเฟรม (How) ---
             if c_space and c_space != "Auto (ให้ AI จัดวางเอง)": 
                 framing = "wide pulled-back shot"
                 lens_spec = "shot on Sony A7R IV, 35mm lens, f/2.8"
@@ -313,7 +334,9 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
                 framing = f"{camera_angle}, {framing}"
 
             # --- 2.2 ชุดแต่งกายอัจฉริยะ (Smart Wardrobe) ---
-            if is_holiday_mode: clothes = random.choice(["cozy seasonal sweaters", "elegant festive evening wear", "warm winter coats"])
+            if is_holiday_mode: 
+                if "Asian" in holiday_region: clothes = random.choice(["traditional cultural clothing", "modern festive attire", "elegant festive wear"])
+                else: clothes = random.choice(["cozy seasonal sweaters", "elegant festive evening wear", "warm winter coats"])
             elif target_env == "CORPORATE": clothes = "professional business attire"
             elif target_env == "CYBER_TECH": clothes = "modern tech-wear or smart casual"
             elif target_env == "HEALTHCARE": clothes = "medical scrubs or professional clinic uniform"
@@ -326,18 +349,23 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
             else: clothes = "modern smart casual"
             
             # --- 2.3 ประชากรศาสตร์ (Who) ---
+            # หากเลือกเทศกาลเอเชียและตั้งค่าให้สุ่มเชื้อชาติ จะให้น้ำหนักไปทางเอเชียเป็นพิเศษ
             if demo_control == "Asian Only": selected_eth, selected_age = "Asian", random.choice(ages)
             elif demo_control == "Caucasian Only": selected_eth, selected_age = "Caucasian", random.choice(ages)
             elif demo_control == "Black Only": selected_eth, selected_age = "Black", random.choice(ages)
             elif demo_control == "Seniors Only": selected_eth, selected_age = random.choice(ethnicities), "senior"
             elif demo_control == "Young Adults Only": selected_eth, selected_age = random.choice(ethnicities), "young adult"
-            else: selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
+            else: 
+                if is_holiday_mode and "Asian" in holiday_region:
+                    selected_eth, selected_age = random.choice(["Asian", "Asian", "Asian", "South Asian", "mixed-race"]), random.choice(ages)
+                else:
+                    selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
 
             sub_lower = active_subject.lower()
             if any(kw in sub_lower for kw in ['couple', 'two people']):
                 demo_str = f"{get_article(selected_age)} {selected_age} couple dressed in {clothes}"
             elif any(kw in sub_lower for kw in ['family', 'parents']):
-                demo_str = f"a diverse family dressed in {clothes}"
+                demo_str = f"a diverse family dressed in {clothes}" if not (is_holiday_mode and "Asian" in holiday_region) else f"an Asian family dressed in {clothes}"
             elif is_group:
                 demo_str = f"a diverse group of professionals dressed in {clothes}" if target_env == "CORPORATE" else f"a diverse group of people dressed in {clothes}"
             else:
@@ -386,7 +414,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         if palette_text: prompt_tags.append(palette_text)
         
         if lighting_style == "Auto (ให้ AI สุ่ม)":
-            if is_holiday_mode: light = random.choice(["Warm Cozy Bokeh Lighting", "Soft Natural Light", "Cinematic Festive Lighting"])
+            if is_holiday_mode: light = random.choice(["Warm Cozy Bokeh Lighting", "Soft Natural Light", "Cinematic Festival Lighting"])
             elif target_env == "CORPORATE": light = random.choice(["Clean Office Light", "Professional Studio Light"])
             elif target_env == "HEALTHCARE": light = random.choice(["Bright Clinical Light", "Clean White Light"])
             elif target_env == "WELLNESS": light = random.choice(["Soft Natural Light", "Dreamy Diffused Light"])
@@ -404,7 +432,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         clean_tags = [p for p in prompt_tags if p]
         clean_base = ", ".join(clean_tags)
         
-        # ประกอบคำสั่ง Midjourney แบบสมบูรณ์ (รักษาอัตราส่วน, --style raw, และ photorealistic ตามโครงสร้าง)
+        # ประกอบคำสั่ง Midjourney แบบสมบูรณ์
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
             
         neg_prompt = negative_prompt.strip()
