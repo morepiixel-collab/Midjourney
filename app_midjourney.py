@@ -91,22 +91,11 @@ def get_article(word):
     return "an" if word[0].lower() in "aeiou" else "a"
 
 def get_emotion_phrase(emotion_val, active_subj=""):
-    if emotion_val == "Auto (สุ่มตามสถานการณ์)":
-        negative_kws = ["burnout", "sick", "patient", "tired", "stressed", "sad", "hacker", "angry", "frustrate", "cry"]
-        if any(kw in active_subj.lower() for kw in negative_kws):
-            return random.choice(["showing a deeply focused expression", "with a serious and authentic look", "showing visible exhaustion"])
-        else:
-            return random.choice(["showing a natural warm smile", "showing a candid and authentic expression", "exhibiting a warm and friendly demeanor"])
+    negative_kws = ["burnout", "sick", "patient", "tired", "stressed", "sad", "hacker", "angry", "frustrate", "cry"]
+    if any(kw in active_subj.lower() for kw in negative_kws):
+        return random.choice(["showing a deeply focused expression", "with a serious and authentic look", "showing visible exhaustion"])
     else:
-        mapping = {
-            "Natural warm smile": "showing a natural warm smile",
-            "Candid and authentic": "showing a candid and authentic expression",
-            "Deeply focused": "showing a deeply focused expression",
-            "Relaxed and calm": "exhibiting a relaxed and calm mood",
-            "Excited and joyful": "showing an excited and joyful expression"
-        }
-        return mapping.get(emotion_val, f"showing {get_article(emotion_val)} {emotion_val.lower()} expression")
-
+        return random.choice(["showing a natural warm smile", "showing a candid and authentic expression", "exhibiting a warm and friendly demeanor"])
 
 # --- UI Layout ---
 st.subheader("1️⃣ กำหนดเนื้อหาภาพ (Subject & Story)")
@@ -121,6 +110,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     if "General" in work_mode:
         ready_ideas_list = [
+            "None (ไม่ระบุ)",
             "Auto (ให้ AI สุ่ม)", 
             "--- 📊 1. Business Micro-Situations ---", "[1.1 Business] employee burnout at desk", "[1.2 Business] manager giving feedback to employee", "[1.3 Business] business team meeting",
             "--- 🤝 2. AI + Human Interaction ---", "[2.1 AI] human using AI assistant hologram", "[2.2 AI] AI chatbot customer service",
@@ -136,7 +126,7 @@ with col1:
             "--- 🚚 12. E-Commerce & Logistics ---", "[12.1 Ecom] clicking Buy Now phone", "[12.2 Ecom] receiving delivery box",
             "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] diverse family cooking dinner together", "[13.3 Food] young couple cooking together"
         ]
-        ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list)
+        ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list, index=1)
         holiday_region = None
         holiday_choice = None
     else:
@@ -214,49 +204,33 @@ st.markdown("---")
 if st.button("🚀 Generate Prompts", use_container_width=True):
     
     main_idea = idea_manual.strip()
-    ready_text = ""
-    is_preset_used = False
     is_holiday_mode = "Seasonal" in work_mode
     
-    # ดึงค่า Preset หรือ Holiday
+    # 🌟 1. หาค่าตั้งต้น (Subject)
+    preset_text = ""
     if is_holiday_mode:
-        if "Western" in holiday_region:
-            ready_text = WESTERN_HOLIDAYS_DICT[holiday_choice]
-        else:
-            ready_text = ASIAN_HOLIDAYS_DICT[holiday_choice]
-        is_preset_used = True
-    elif ready_idea != "Auto (ให้ AI สุ่ม)" and not ready_idea.startswith("---"):
-        ready_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
-        is_preset_used = True
+        preset_text = WESTERN_HOLIDAYS_DICT[holiday_choice] if "Western" in holiday_region else ASIAN_HOLIDAYS_DICT[holiday_choice]
+    elif ready_idea not in ["None (ไม่ระบุ)", "Auto (ให้ AI สุ่ม)"] and not ready_idea.startswith("---"):
+        preset_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
 
-    # 🌟 รวม Subject (What)
-    if is_preset_used and main_idea:
-        active_subject = f"{ready_text}, {main_idea}"
-    elif is_preset_used:
-        active_subject = f"{ready_text}"
+    # รวม Manual Idea กับ Preset (ถ้ามี)
+    active_subject = ""
+    if main_idea and preset_text:
+        active_subject = f"{preset_text}, {main_idea}"
     elif main_idea:
-        active_subject = f"{main_idea}"
+        active_subject = main_idea
+    elif preset_text:
+        active_subject = preset_text
     else:
         active_subject = "people" if include_human == "Yes" else "objects"
 
     group_keywords = ['team', 'family', 'couple', 'parents', 'meeting', 'collaboration', 'group', 'colleagues', 'party', 'celebration', 'gathering']
     is_group = any(kw in active_subject.lower() for kw in group_keywords)
 
-    # 🌟 ตรวจจับสภาพแวดล้อมอัตโนมัติ (Environment Routing)
+    # 🌟 2. หาหมวดหมู่สถานที่ (Environment Routing)
     target_env = "LIFESTYLE" 
-    
     if is_holiday_mode:
         target_env = "HOLIDAY_INDOOR" if any(x in active_subject.lower() for x in ["indoor", "room", "dinner", "party", "home", "tree", "diya"]) else "HOLIDAY_OUTDOOR"
-    elif is_preset_used and not is_holiday_mode:
-        if any(tag in ready_idea for tag in ["[1.", "[10."]): target_env = "CORPORATE"
-        elif any(tag in ready_idea for tag in ["[2.", "[4.", "[7."]): target_env = "CYBER_TECH"
-        elif any(tag in ready_idea for tag in ["[5.", "[8."]): target_env = "ECO_SUSTAINABILITY"
-        elif any(tag in ready_idea for tag in ["[6."]): target_env = "HEALTHCARE"
-        elif any(tag in ready_idea for tag in ["[9."]): target_env = "WELLNESS"
-        elif any(tag in ready_idea for tag in ["[11."]): target_env = "EDUCATION"
-        elif any(tag in ready_idea for tag in ["[12."]): target_env = "ECOMMERCE_LOGISTICS"
-        elif any(tag in ready_idea for tag in ["[13."]): target_env = "FOOD_DIET"
-        elif any(tag in ready_idea for tag in ["[3."]): target_env = "LIFESTYLE"
     else:
         full_context = active_subject.lower()
         if any(x in full_context for x in ["cyber", "ai", "tech", "hacker", "data", "server"]): target_env = "CYBER_TECH"
@@ -268,196 +242,154 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
         elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital"]): target_env = "HEALTHCARE"
         elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
         elif any(x in full_context for x in ["office", "business", "corporate", "bus", "fin", "meeting"]): target_env = "CORPORATE"
+        elif ready_idea == "Auto (ให้ AI สุ่ม)" and not main_idea:
+            # ถ้าเป็น Auto ล้วนๆ ให้สุ่มสถานที่ใหม่เลยเพื่อความหลากหลาย
+            target_env = random.choice([k for k in ENV_GROUPS.keys() if "HOLIDAY" not in k])
 
     prompts = []
     
     for i in range(prompt_count):
-        # --- ประมวลผล Niche และ Copy Space ภายใน Loop เพื่อให้สุ่มใหม่ทุกครั้ง ---
-        niche_text = ""
-        if niche_insights == "None (ไม่ระบุ)":
-            niche_text = ""
-        elif niche_insights == "Auto (ให้ AI สุ่ม)":
-            # สุ่มดึง Niche ออกมาใช้ 50% ของเวลา เพื่อเพิ่มความหลากหลาย
-            if random.random() > 0.5:
-                valid_niches = [n for n in niche_list if "Auto" not in n and "None" not in n]
-                niche_text = f"{random.choice(valid_niches)} concept"
-        else:
-            niche_text = f"{niche_insights} concept"
-
-        c_space = ""
-        if copy_space not in ["None (ไม่ระบุ)", "Auto (ให้ AI จัดวางเอง)"]:
-            c_space = copy_space
-
-        if target_env in ["HOLIDAY_INDOOR", "HOLIDAY_OUTDOOR"]:
-            raw_location = random.choice(ENV_GROUPS[target_env])
-            action_group = "HOLIDAY"
-            obj_group = "HOLIDAY"
-        else:
-            raw_location = random.choice(ENV_GROUPS[target_env])
-            action_group = target_env
-            obj_group = target_env
-
-        stylize_value = random.randint(100, 250)
+        prompt_tags = [] # เก็บชิ้นส่วนของ Prompt
         
-        # 🎨 โทนสี (Color Palette)
-        palette_text = ""
-        if color_palette == "None (ไม่ระบุ)":
-            palette_text = ""
-        elif color_palette == "Auto (ให้ AI สุ่ม)":
-            if is_holiday_mode:
-                if "Asian" in holiday_region: auto_c = random.choice(["Vibrant Cultural Colors", "Warm & Inviting", "Festive Red & Gold"])
-                else: auto_c = random.choice(["Warm & Inviting", "Festive Red & Gold", "Winter Blue & Silver"])
-            elif target_env == "CORPORATE": auto_c = random.choice(["Modern Blue & White", "Cool Teal & Grey", "Neutral & Clean"])
-            elif target_env == "HEALTHCARE": auto_c = random.choice(["Clean White & Blue", "Soft Pastels", "Neutral & Clean"])
-            elif target_env == "WELLNESS": auto_c = random.choice(["Warm Earth Tones", "Muted & Earthy", "Soft Pastels"])
-            elif target_env == "OUTDOOR": auto_c = random.choice(["Natural & True-to-life", "Vibrant & Punchy"])
-            elif target_env == "CYBER_TECH": auto_c = random.choice(["Cool Teal & Grey", "High-Contrast Black & Gold"])
-            elif target_env == "ECO_SUSTAINABILITY": auto_c = random.choice(["Natural & True-to-life", "Muted & Earthy"])
-            elif target_env == "EDUCATION": auto_c = random.choice(["Bright & Airy", "Neutral & Clean"])
-            elif target_env == "ECOMMERCE_LOGISTICS": auto_c = random.choice(["Neutral & Clean", "Bright & Airy"])
-            elif target_env == "FOOD_DIET": auto_c = random.choice(["Warm & Inviting", "Natural & True-to-life"])
-            else: auto_c = random.choice(["Warm & Inviting", "Muted Scandinavian"])
-            palette_text = f"using {get_article(auto_c)} {auto_c} color palette"
-        else:
-            palette_text = f"using {get_article(color_palette)} {color_palette} color palette"
+        # -----------------------------------------------------
+        # ระบบตรวจสอบตรรกะ None / Auto แบบตรงไปตรงมา
+        # -----------------------------------------------------
 
-        prompt_tags = []
-        lens_spec = ""
-        bokeh_effect = ""
-        
-        # 📸 1. Medium
+        # 1. Medium (ค่าตายตัวเพื่อให้ได้ภาพ Stock เสมอ)
         prompt_tags.append("high-end commercial stock photography")
         prompt_tags.append("photorealistic")
-        
-        # 🧑 2. หากเป็นภาพมนุษย์ (Include Human = Yes)
-        if include_human == "Yes":
+
+        # 2. Camera Angle (มุมกล้อง)
+        cam_text = ""
+        if camera_angle == "None (ไม่ระบุ)":
+            cam_text = ""
+        elif camera_angle == "Auto (ให้ AI สุ่มมุมกล้อง)":
+            cam_text = random.choice(["Eye-level shot", "High angle top-down shot", "Low angle hero shot", "Over-the-shoulder shot"])
+        else:
+            cam_text = camera_angle
             
-            # --- 2.1 มุมกล้องและการจัดเฟรม (How) ---
-            if c_space: 
-                framing = "wide pulled-back shot"
-                lens_spec = "shot on Sony A7R IV, 35mm lens, f/2.8"
-                bokeh_effect = "beautiful bokeh, blurred background"
-            else:
-                framing_choice = random.choice([
-                    ("wide shot", "shot on Sony A7R IV, 35mm lens, f/2.8", "beautiful bokeh, softly blurred background"), 
-                    ("medium shot", "shot on Canon EOS R5, 50mm lens, f/1.8", "shallow depth of field, blurred background"), 
-                    ("close-up portrait", "shot on Fujifilm GFX 100, 85mm lens, f/1.2", "creamy bokeh, heavily blurred background, extreme shallow depth of field")
-                ])
-                framing = framing_choice[0]
-                lens_spec = framing_choice[1]
-                bokeh_effect = framing_choice[2]
+        if cam_text: prompt_tags.append(cam_text)
 
-            if camera_angle not in ["None (ไม่ระบุ)", "Auto (ให้ AI สุ่มมุมกล้อง)"]:
-                framing = f"{camera_angle}, {framing}"
+        # 3. Framing & Lens (ระยะภาพและเลนส์ - ผูกไว้ด้วยกันเพื่อให้ภาพออกมาสวย)
+        if copy_space not in ["None (ไม่ระบุ)", "Auto (ให้ AI จัดวางเอง)"]:
+            framing = "wide pulled-back shot"
+            lens_spec = "shot on Sony A7R IV, 35mm lens, f/2.8"
+            bokeh_effect = "beautiful bokeh, blurred background"
+        else:
+            framing_choice = random.choice([
+                ("wide shot", "shot on Sony A7R IV, 35mm lens, f/2.8", "beautiful bokeh, softly blurred background"), 
+                ("medium shot", "shot on Canon EOS R5, 50mm lens, f/1.8", "shallow depth of field, blurred background"), 
+                ("close-up portrait", "shot on Fujifilm GFX 100, 85mm lens, f/1.2", "creamy bokeh, heavily blurred background, extreme shallow depth of field")
+            ])
+            framing, lens_spec, bokeh_effect = framing_choice[0], framing_choice[1], framing_choice[2]
 
-            # --- 2.2 ชุดแต่งกายอัจฉริยะ (Smart Wardrobe) ---
+        # 4. Human & Demographics (ประชากรศาสตร์)
+        if include_human == "Yes":
+            # ชุดแต่งกายอิงตาม Environment
             if is_holiday_mode: 
-                if "Asian" in holiday_region: clothes = random.choice(["traditional cultural clothing", "modern festive attire", "elegant festive wear"])
-                else: clothes = random.choice(["cozy seasonal sweaters", "elegant festive evening wear", "warm winter coats"])
+                if "Asian" in holiday_region: clothes = random.choice(["traditional cultural clothing", "modern festive attire"])
+                else: clothes = random.choice(["cozy seasonal sweaters", "elegant festive evening wear"])
             elif target_env == "CORPORATE": clothes = "professional business attire"
             elif target_env == "CYBER_TECH": clothes = "modern tech-wear or smart casual"
             elif target_env == "HEALTHCARE": clothes = "medical scrubs or professional clinic uniform"
-            elif target_env == "ECOMMERCE_LOGISTICS": clothes = "warehouse uniform with safety vest"
-            elif target_env == "FOOD_DIET": clothes = "casual home clothing or chef apron"
             elif target_env == "OUTDOOR": clothes = "outdoor hiking activewear"
-            elif target_env == "WELLNESS": clothes = "comfortable yoga activewear"
-            elif target_env == "EDUCATION": clothes = "casual campus attire"
-            elif target_env == "ECO_SUSTAINABILITY": clothes = "sustainable organic cotton clothing"
             else: clothes = "modern smart casual"
-            
-            # --- 2.3 ประชากรศาสตร์ (Who) ---
+
+            # วิเคราะห์เงื่อนไข Demographics
             if demo_control == "None (ไม่ระบุ)":
-                # ตัดคำระบุสัญชาติและอายุออก เหลือเพียงกลุ่มคนหรือบุคคล
-                if any(kw in sub_lower for kw in ['couple', 'two people']): demo_str = f"a couple dressed in {clothes}"
-                elif any(kw in sub_lower for kw in ['family', 'parents']): demo_str = f"a family dressed in {clothes}"
-                elif is_group: demo_str = f"a group of professionals dressed in {clothes}" if target_env == "CORPORATE" else f"a group of people dressed in {clothes}"
+                if any(kw in active_subject.lower() for kw in ['couple', 'two people']): demo_str = f"a couple dressed in {clothes}"
+                elif any(kw in active_subject.lower() for kw in ['family', 'parents']): demo_str = f"a family dressed in {clothes}"
+                elif is_group: demo_str = f"a group of people dressed in {clothes}"
                 else: demo_str = f"a person dressed in {clothes}"
             else:
-                if demo_control == "Asian Only": selected_eth, selected_age = "Asian", random.choice(ages)
+                if demo_control == "Auto (ให้ AI สุ่ม)":
+                    selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
+                elif demo_control == "Asian Only": selected_eth, selected_age = "Asian", random.choice(ages)
                 elif demo_control == "Caucasian Only": selected_eth, selected_age = "Caucasian", random.choice(ages)
                 elif demo_control == "Black Only": selected_eth, selected_age = "Black", random.choice(ages)
                 elif demo_control == "Seniors Only": selected_eth, selected_age = random.choice(ethnicities), "senior"
                 elif demo_control == "Young Adults Only": selected_eth, selected_age = random.choice(ethnicities), "young adult"
-                else: 
-                    if is_holiday_mode and "Asian" in holiday_region:
-                        selected_eth, selected_age = random.choice(["Asian", "Asian", "Asian", "South Asian", "mixed-race"]), random.choice(ages)
-                    else:
-                        selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
-
-                if any(kw in sub_lower for kw in ['couple', 'two people']):
+                
+                if any(kw in active_subject.lower() for kw in ['couple', 'two people']):
                     demo_str = f"{get_article(selected_age)} {selected_age} couple dressed in {clothes}"
-                elif any(kw in sub_lower for kw in ['family', 'parents']):
-                    demo_str = f"a diverse family dressed in {clothes}" if not (is_holiday_mode and "Asian" in holiday_region) else f"an Asian family dressed in {clothes}"
+                elif any(kw in active_subject.lower() for kw in ['family', 'parents']):
+                    demo_str = f"a diverse family dressed in {clothes}"
                 elif is_group:
-                    demo_str = f"a diverse group of professionals dressed in {clothes}" if target_env == "CORPORATE" else f"a diverse group of people dressed in {clothes}"
+                    demo_str = f"a diverse group of people dressed in {clothes}"
                 else:
                     demo_str = f"{get_article(selected_age)} {selected_age} {selected_eth} {random.choice(genders)} dressed in {clothes}"
             
             prompt_tags.append(f"{framing} of {demo_str}")
 
-            # --- 2.4 การกระทำ (What) ---
-            if is_preset_used:
-                action_str = active_subject
+            # 5. Action (การกระทำ)
+            action_text = ""
+            if ready_idea == "None (ไม่ระบุ)":
+                action_text = main_idea if main_idea else ""
+            elif ready_idea == "Auto (ให้ AI สุ่ม)":
+                action_text = main_idea if main_idea else random.choice(ACTION_GROUPS.get("HOLIDAY" if is_holiday_mode else target_env, ["working"]))
             else:
-                action_str = random.choice(ACTION_GROUPS[action_group])
-                if main_idea: action_str += f", {main_idea}"
-            prompt_tags.append(action_str)
+                action_text = active_subject
 
-            # --- 2.5 อารมณ์และสีหน้า (Emotion / How) ---
+            if action_text: prompt_tags.append(action_text)
+
+            # 6. Emotion (อารมณ์)
             if emotion_control != "None (ไม่ระบุ)":
-                final_emotion_phrase = get_emotion_phrase(emotion_control, active_subject)
-                prompt_tags.append(final_emotion_phrase)
-
-        # 📦 3. หากเป็นภาพสิ่งของ (No Human / Flat Lay)
-        else:
-            if is_preset_used or main_idea:
-                theme = active_subject
-                obj_focus = f"objects and aesthetic elements representing the concept of '{theme.strip()}'"
-            else:
-                obj_focus = random.choice(OBJECT_GROUPS[obj_group])
-            
+                if emotion_control == "Auto (สุ่มตามสถานการณ์)":
+                    prompt_tags.append(get_emotion_phrase("Auto", active_subject))
+                else:
+                    mapping = {"Natural warm smile": "showing a natural warm smile", "Candid and authentic": "showing a candid and authentic expression", "Deeply focused": "showing a deeply focused expression", "Relaxed and calm": "exhibiting a relaxed and calm mood", "Excited and joyful": "showing an excited and joyful expression"}
+                    prompt_tags.append(mapping.get(emotion_control, f"showing a {emotion_control.lower()} expression"))
+                    
+        else: # กรณี No Human (Flat Lay)
+            obj_focus = active_subject if active_subject != "objects" else random.choice(OBJECT_GROUPS.get("HOLIDAY" if is_holiday_mode else target_env, ["everyday items"]))
             prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
             prompt_tags.append("knolling aesthetic, perfectly organized layout")
             lens_spec = "shot on Sony A7R IV, 35mm lens, f/8.0, sharp focus across entire layout"
+            bokeh_effect = ""
 
-        # 🌟 4. บริบทเสริมเจาะตลาด (Niche Concept)
-        if niche_text: prompt_tags.append(niche_text)
+        # 7. Niche Concept
+        if niche_insights != "None (ไม่ระบุ)":
+            if niche_insights == "Auto (ให้ AI สุ่ม)":
+                valid_niches = [n for n in niche_list if "Auto" not in n and "None" not in n]
+                prompt_tags.append(f"{random.choice(valid_niches)} concept")
+            else:
+                prompt_tags.append(f"{niche_insights} concept")
 
-        # 🌟 5. สถานที่ (Where)
+        # 8. Environment (สถานที่ตั้ง)
+        raw_location = random.choice(ENV_GROUPS.get("HOLIDAY_INDOOR" if is_holiday_mode else target_env, ["modern room"]))
         if include_human == "No":
             prompt_tags.append(f"arranged flat on a surface within {get_article(raw_location)} {raw_location}")
         else:
             prompt_tags.append(f"set in {get_article(raw_location)} {raw_location}")
             if bokeh_effect: prompt_tags.append(bokeh_effect)
-            
-        # 🌟 6. องค์ประกอบภาพ (Copy Space)
-        if c_space: prompt_tags.append(c_space)
-        
-        # 🌟 7. แสงและสี (Lighting & Color / When)
-        if palette_text: prompt_tags.append(palette_text)
-        
-        if lighting_style == "None (ไม่ระบุ)":
-            pass # ไม่ระบุแสง ปล่อยให้ Midjourney จัดการเอง
-        elif lighting_style == "Auto (ให้ AI สุ่ม)":
-            if is_holiday_mode: light = random.choice(["Warm Cozy Bokeh Lighting", "Soft Natural Light", "Cinematic Festival Lighting"])
-            elif target_env == "CORPORATE": light = random.choice(["Clean Office Light", "Professional Studio Light"])
-            elif target_env == "HEALTHCARE": light = random.choice(["Bright Clinical Light", "Clean White Light"])
-            elif target_env == "WELLNESS": light = random.choice(["Soft Natural Light", "Dreamy Diffused Light"])
-            elif target_env == "OUTDOOR": light = random.choice(["Golden Hour Sunlight", "Bright Natural Daylight"])
-            elif target_env == "CYBER_TECH": light = random.choice(["Modern Neon Accent", "Cinematic Dark Lighting"])
-            else: light = random.choice(["Warm Ambient Light", "Soft Natural Light"])
-            prompt_tags.append(f"lit by {light}")
-        else:
-            prompt_tags.append(f"lit by {lighting_style}")
 
-        # 🌟 8. ข้อมูลเลนส์และกล้องขั้นสูง (Technical)
+        # 9. Copy Space
+        if copy_space not in ["None (ไม่ระบุ)", "Auto (ให้ AI จัดวางเอง)"]:
+            prompt_tags.append(copy_space)
+
+        # 10. Color & Lighting
+        if color_palette != "None (ไม่ระบุ)":
+            if color_palette == "Auto (ให้ AI สุ่ม)":
+                auto_c = random.choice(["Warm & Inviting", "Cool & Professional", "Neutral & Clean", "Bright & Airy", "Muted & Earthy"])
+                prompt_tags.append(f"using {get_article(auto_c)} {auto_c} color palette")
+            else:
+                prompt_tags.append(f"using {get_article(color_palette)} {color_palette} color palette")
+
+        if lighting_style != "None (ไม่ระบุ)":
+            if lighting_style == "Auto (ให้ AI สุ่ม)":
+                auto_l = random.choice(["Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Clean Office Light"])
+                prompt_tags.append(f"lit by {auto_l}")
+            else:
+                prompt_tags.append(f"lit by {lighting_style}")
+
+        # 11. Lens & Tech
         prompt_tags.append(lens_spec)
 
-        # 🧹 ทำความสะอาด Tags ว่างๆ และประกอบร่างประโยคสุดท้าย
+        # --- ประกอบร่าง Prompt ---
         clean_tags = [p for p in prompt_tags if p]
         clean_base = ", ".join(clean_tags)
         
-        # ประกอบคำสั่ง Midjourney แบบสมบูรณ์
+        stylize_value = random.randint(100, 250)
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
             
         neg_prompt = negative_prompt.strip()
@@ -469,7 +401,7 @@ if st.button("🚀 Generate Prompts", use_container_width=True):
     # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
     prompt_text = "\n".join(prompts)
     
-    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (โค้ดคลีน แกรมม่าเป๊ะ ไร้จุดบอด 100%!)")
+    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (ระบบลอจิกใหม่ ตัด None ทิ้ง / สุ่ม Auto 100%)")
     
     st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
     for p in prompts[:5]:
