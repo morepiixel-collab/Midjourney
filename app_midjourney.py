@@ -1,416 +1,142 @@
 import streamlit as st
 import random
-import re
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
-st.set_page_config(page_title="Midjourney Stock Pro", page_icon="👑", layout="wide")
+st.set_page_config(page_title="Background Master Pro", page_icon="🖼️", layout="wide")
 
-st.title("👑 The Master Production Edition (Photorealistic Stock 100%)")
+# --- 🔧 6 โมดูลหลัก (ตามสูตรทำเงิน) ---
+SCENE_LIST = [
+    "modern office hallway", 
+    "glass corridor", 
+    "startup workspace", 
+    "meeting room", 
+    "city view through office glass"
+]
+
+LIGHTING_LIST = [
+    "natural side lighting", 
+    "morning warm light", 
+    "sunset golden light", 
+    "cool office light", 
+    "night artificial glow"
+]
+
+DEPTH_LIST = [
+    "heavy blur background", 
+    "medium depth of field", 
+    "light blur (semi sharp)"
+]
+
+COMPOSITION_LIST = [
+    "copy space left", 
+    "copy space right", 
+    "copy space center", 
+    "top copy space (vertical)"
+]
+
+MOOD_TONE_LIST = [
+    "neutral corporate", 
+    "blue tech tone", 
+    "warm realistic", 
+    "dark moody"
+]
+
+USE_CASE_LIST = [
+    "minimal clean composition", 
+    "strong leading lines", 
+    "wide banner composition", 
+    "vertical ad layout"
+]
+
+# --- UI Sidebar (ตั้งค่าระบบ) ---
+with st.sidebar:
+    st.header("⚙️ Settings")
+    prompt_count = st.number_input("จำนวน Prompts", min_value=1, max_value=200, step=10, value=50)
+    aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "3:2", "1:1", "4:5", "9:16"], index=1)
+    st.markdown("---")
+    st.subheader("🛡️ Safety & Quality")
+    # ล็อก Vector/3D ตามกฎเดิม และเพิ่ม people/person เพื่อกันภาพติดคน
+    negative_prompt = st.text_area(
+        "Negative Prompt (--no)", 
+        value="vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures, ugly, deformed, people, person", 
+        height=100
+    )
+    st.info("💡 เพิ่มคำว่า 'people, person' ลงใน Negative Prompt เพื่อบังคับให้ได้พื้นหลังว่าง 100%")
+
+# --- UI พื้นที่หลัก (Main Area) ---
+st.title("🖼️ Commercial Background Engine")
+st.markdown("ระบบปั่น Prompt สายฉากหลัง (Background) เว้นพื้นที่ Copy Space สำหรับงานโฆษณา")
 st.markdown("---")
 
-# 🌟 1. ข้อมูลสถานที่ (Environment / Where)
-ENV_GROUPS = {
-    "CORPORATE": ["modern bright office interior", "minimalist executive boardroom", "high-end startup workspace", "glass-walled conference room"],
-    "HEALTHCARE": ["clean minimalist clinic", "premium wellness center", "modern medical lab", "bright hospital corridor"],
-    "WELLNESS": ["peaceful sunlit yoga studio", "tranquil meditation room", "serene indoor zen garden", "minimalist calm room"],
-    "OUTDOOR": ["scenic mountain pass", "golden hour beach", "lush green national park", "sunny hiking trail"],
-    "LIFESTYLE": ["cozy artisanal cafe", "modern minimalist living room", "urban rooftop terrace", "sunlit home office"],
-    "CYBER_TECH": ["futuristic server room", "neon-lit data center", "high-tech control room", "advanced robotics lab"],
-    "ECO_SUSTAINABILITY": ["sustainable green building interior", "lush indoor vertical garden", "solar panel field", "eco-friendly greenhouse"],
-    "EDUCATION": ["modern university classroom", "bright digital learning hub", "quiet modern library", "interactive e-learning studio"],
-    "ECOMMERCE_LOGISTICS": ["automated modern warehouse", "clean distribution center", "bright packaging facility", "logistics control center"],
-    "FOOD_DIET": ["bright modern home kitchen", "rustic wooden dining table", "organic food market stall", "cozy dining room"],
-    "HOLIDAY_INDOOR": ["cozy decorated living room", "festive dining room", "warm inviting home interior", "decorated event hall", "traditional festive indoor setting"],
-    "HOLIDAY_OUTDOOR": ["snowy winter street", "festive town square", "decorated outdoor patio", "autumn park landscape", "vibrant festival street"]
-}
-
-# 🌟 2. ท่าทางแบบสุ่ม (Action / What)
-ACTION_GROUPS = {
-    "CORPORATE": ["collaborating enthusiastically", "analyzing complex data", "leading a strategic business meeting"],
-    "HEALTHCARE": ["reviewing patient medical records", "providing professional care", "examining health data"],
-    "WELLNESS": ["practicing deep mindfulness", "sitting in a relaxed zen posture", "enjoying a peaceful mindful moment"],
-    "OUTDOOR": ["admiring the expansive scenic view", "walking purposefully", "enjoying the fresh natural air"],
-    "LIFESTYLE": ["enjoying a warm cup of coffee", "scrolling thoughtfully on a smartphone", "relaxing comfortably"],
-    "CYBER_TECH": ["typing rapidly on a glowing keyboard", "analyzing complex digital interfaces", "working intensely on software code"],
-    "ECO_SUSTAINABILITY": ["inspecting green plants carefully", "holding eco-friendly materials", "examining environmental data metrics"],
-    "EDUCATION": ["taking detailed academic notes", "reading a book attentively", "focusing intensely on e-learning materials"],
-    "ECOMMERCE_LOGISTICS": ["scanning inventory barcodes", "organizing delivery packages", "checking logistics data"],
-    "FOOD_DIET": ["preparing fresh healthy ingredients", "choosing organic vegetables carefully", "enjoying a nutritious balanced meal"],
-    "HOLIDAY": ["celebrating joyfully", "holding festive decorations", "enjoying the holiday atmosphere", "exchanging seasonal gifts", "participating in cultural traditions"]
-}
-
-# 🌟 3. สิ่งของแบบสุ่ม (ภาพไม่มีคน / Flat Lay)
-OBJECT_GROUPS = {
-    "CORPORATE": ["modern tech gadgets, a coffee cup, and organized corporate documents", "minimalist desk accessories and a digital tablet"],
-    "HEALTHCARE": ["clean medical instruments, health charts, and supplements", "a stethoscope alongside a digital health tablet"],
-    "WELLNESS": ["essential oil bottles, a neatly rolled yoga mat, and smooth zen stones", "a gratitude journal, herbal tea cup, and bamboo elements"],
-    "OUTDOOR": ["a vintage compass, an outdoor trail map, and hiking gear", "travel essentials, a digital camera, and a reusable water bottle"],
-    "LIFESTYLE": ["a stylish lifestyle magazine, sunglasses, and a ceramic coffee cup", "minimalist home decor items and a small potted houseplant"],
-    "CYBER_TECH": ["advanced circuit boards, glowing fiber optic cables, and tech hardware", "cybersecurity conceptual elements and smart devices"],
-    "ECO_SUSTAINABILITY": ["biodegradable packaging materials and fresh green leaves", "recycled paper products and a small growing plant"],
-    "EDUCATION": ["open academic textbooks, highlighters, and a modern laptop", "neatly stacked notebooks, a premium pen, and digital learning tools"],
-    "ECOMMERCE_LOGISTICS": ["sturdy cardboard boxes, shipping labels, and a barcode scanner", "premium product packaging and a logistics tracking tablet"],
-    "FOOD_DIET": ["fresh organic vegetables and rustic wooden cooking utensils", "colorful healthy ingredients, superfood seeds, and fresh fruits"],
-    "HOLIDAY": ["festive holiday decorations and seasonal elements", "wrapped gifts, ribbons, and cultural ornaments", "holiday greeting cards and festive treats"]
-}
-
-# 🌟 4. ข้อมูลวันสำคัญ (Holidays)
-WESTERN_HOLIDAYS_DICT = {
-    "New Year's Day (1 Jan)": "New Year's Day celebration, festive new year atmosphere, confetti, sparkling champagne",
-    "Valentine's Day (14 Feb)": "Valentine's Day romantic concept, red roses, heart shapes, love and romance atmosphere",
-    "St. Patrick's Day (17 Mar)": "St. Patrick's Day celebration, green clover theme, shamrocks, festive Irish holiday",
-    "Easter Sunday (Varies, Mar/Apr)": "Easter Sunday concept, pastel spring colors, painted easter eggs, spring season",
-    "Mother's Day (Varies, May)": "Mother's Day warm concept, pink carnations, family appreciation, warm maternal bond",
-    "Father's Day (Varies, Jun)": "Father's Day concept, masculine elements, father appreciation, family bonding",
-    "Independence Day / 4th of July (4 Jul)": "4th of July Independence Day, red white and blue theme, patriotic celebration, sparklers",
-    "Halloween (31 Oct)": "Halloween spooky but friendly concept, carved pumpkins, autumn colors, trick or treat atmosphere",
-    "Thanksgiving (4th Thu of Nov)": "Thanksgiving harvest festival, warm autumn tones, turkey dinner concept, gratitude",
-    "Black Friday / Cyber Monday (Nov)": "Black Friday mega sale concept, shopping bags, e-commerce promotions, modern retail",
-    "Christmas (25 Dec)": "Christmas winter wonderland, cozy warm lighting, decorated christmas tree, wrapped gifts",
-    "New Year's Eve (31 Dec)": "New Year's Eve countdown party, glamorous evening, fireworks, elegant celebration"
-}
-
-ASIAN_HOLIDAYS_DICT = {
-    "Lunar New Year / Chinese New Year (Jan/Feb)": "Lunar New Year celebration, traditional red and gold decorations, paper lanterns, festive Asian atmosphere",
-    "Songkran Festival / Thai New Year (13-15 Apr)": "Songkran water festival, joyful water splashing, vibrant Thai summer celebration",
-    "Golden Week / Sakura Season (Spring/Apr-May)": "Spring cherry blossom season, beautiful blooming sakura trees, vibrant Japanese spring, peaceful nature",
-    "Dragon Boat Festival (May/Jun)": "Dragon Boat Festival, traditional zongzi, energetic dragon boat racing, Asian cultural heritage",
-    "Mid-Autumn Festival / Mooncake Festival (Sep/Oct)": "Mid-Autumn festival, glowing paper lanterns, delicious mooncakes, family gathering under the full moon",
-    "Chuseok / Korean Thanksgiving (Sep/Oct)": "Chuseok Korean harvest festival, traditional hanbok, rich autumn harvest, family gathering",
-    "Diwali / Festival of Lights (Oct/Nov)": "Diwali festival of lights, glowing diya lamps, colorful rangoli, festive Indian celebration",
-    "Loy Krathong Festival (Nov)": "Loy Krathong festival, floating glowing krathongs on the river, beautiful night time celebration, Thai cultural heritage"
-}
-
-ethnicities = ["Asian", "Caucasian", "Hispanic", "Middle Eastern", "Black", "mixed-race", "South Asian"]
-ages = ["young adult", "middle-aged", "senior"]
-genders = ["man", "woman"] 
-
-# --- Helper Functions ---
-def get_article(word):
-    if not word: return ""
-    return "an" if word[0].lower() in "aeiou" else "a"
-
-def get_emotion_phrase(emotion_val, active_subj=""):
-    negative_kws = ["burnout", "sick", "patient", "tired", "stressed", "sad", "hacker", "angry", "frustrate", "cry"]
-    if any(kw in active_subj.lower() for kw in negative_kws):
-        return random.choice(["showing a deeply focused expression", "with a serious and authentic look", "showing visible exhaustion"])
-    else:
-        return random.choice(["showing a natural warm smile", "showing a candid and authentic expression", "exhibiting a warm and friendly demeanor"])
-
-# --- UI Layout ---
-st.subheader("1️⃣ กำหนดเนื้อหาภาพ (Subject & Story)")
-
-work_mode = st.radio("🌟 เลือกโหมดการทำงาน (Work Mode):", 
-                     ["🏢 โหมดงานทั่วไป (General Commercial)", "🎄 โหมดวันสำคัญเทศกาล (Seasonal / Holidays)"], 
-                     horizontal=True)
-st.markdown("---")
+st.subheader("📍 กำหนดโครงสร้าง (Modules)")
+st.caption("เลือกเจาะจงทีละค่า หรือปล่อย Auto เพื่อให้ระบบสุ่มสร้าง Variation ให้ไม่ซ้ำกัน")
 
 col1, col2, col3 = st.columns(3)
-
 with col1:
-    if "General" in work_mode:
-        ready_ideas_list = [
-            "None (ไม่ระบุ)",
-            "Auto (ให้ AI สุ่ม)", 
-            "--- 📊 1. Business Micro-Situations ---", "[1.1 Business] employee burnout at desk", "[1.2 Business] manager giving feedback to employee", "[1.3 Business] business team meeting",
-            "--- 🤝 2. AI + Human Interaction ---", "[2.1 AI] human using AI assistant hologram", "[2.2 AI] AI chatbot customer service",
-            "--- 💻 3. Modern Work Lifestyle ---", "[3.1 Work] remote worker video meeting", "[3.2 Work] freelancer home office setup", "[3.3 Work] digital nomad working cafe",
-            "--- 🔒 4. Cybersecurity & Data ---", "[4.1 Cyber] hacker silhouette computer screen", "[4.2 Cyber] digital data protection shield",
-            "--- 💰 5. Finance, Startup & ESG ---", "[5.1 Fin/ESG] fintech mobile payment", "[5.2 Fin/ESG] startup growth chart",
-            "--- 🏥 6. High-Demand Healthcare ---", "[6.1 Health] doctor consulting patient", "[6.2 Health] telemedicine online doctor",
-            "--- 🤖 7. Future Tech (General) ---", "[7.1 Tech] transparent holographic interface", "[7.2 Tech] VR headset data visualization",
-            "--- 🌍 8. Sustainability & Eco ---", "[8.1 Eco] holding small plant", "[8.2 Eco] charging electric vehicle",
-            "--- 🧘‍♀️ 9. Mental Health & Wellness ---", "[9.1 Wellness] meditating peaceful room", "[9.2 Wellness] writing gratitude journal",
-            "--- 💼 10. Corporate Leadership ---", "[10.1 Business] executive presentation", "[10.2 Business] shaking hands deal",
-            "--- 🎓 11. E-Learning ---", "[11.1 Edu] online lecture on laptop", "[11.2 Edu] notes during masterclass",
-            "--- 🚚 12. E-Commerce & Logistics ---", "[12.1 Ecom] clicking Buy Now phone", "[12.2 Ecom] receiving delivery box",
-            "--- 🥗 13. Healthy Food & Diet ---", "[13.1 Food] preparing salad kitchen", "[13.2 Food] diverse family cooking dinner together", "[13.3 Food] young couple cooking together"
-        ]
-        ready_idea = st.selectbox("สถานการณ์สำเร็จรูป (Preset)", ready_ideas_list, index=1)
-        holiday_region = None
-        holiday_choice = None
-    else:
-        holiday_region = st.radio("🌍 เลือกโซนเทศกาล (Region):", ["Western / International", "Asian Holidays"], horizontal=True)
-        if "Western" in holiday_region:
-            holiday_choice = st.selectbox("📅 เลือกวันสำคัญ (Western Holidays)", list(WESTERN_HOLIDAYS_DICT.keys()))
-        else:
-            holiday_choice = st.selectbox("📅 เลือกวันสำคัญ (Asian Holidays)", list(ASIAN_HOLIDAYS_DICT.keys()))
-        ready_idea = "Auto (ให้ AI สุ่ม)"
-
-    idea_manual = st.text_input("ไอเดียหลัก (Manual Entry)", value="", help="พิมพ์คีย์เวิร์ดหลักที่ต้องการ (เป็นภาษาอังกฤษจะดีที่สุด)")
-
+    scene = st.selectbox("1. SCENE (สถานที่)", ["Auto (สุ่ม)"] + SCENE_LIST)
+    lighting = st.selectbox("2. LIGHTING (แสง)", ["Auto (สุ่ม)"] + LIGHTING_LIST)
 with col2:
-    include_human = st.radio("มีมนุษย์ (Include Human)", ["Yes", "No"], horizontal=True)
-    demo_control = st.selectbox("ล็อกเชื้อชาติ/อายุ (Demographics)", [
-        "None (ไม่ระบุ)", "Auto (ให้ AI สุ่ม)", "Asian Only", "Caucasian Only", "Black Only", "Seniors Only", "Young Adults Only"
-    ], index=1)
-
+    depth = st.selectbox("3. DEPTH (ความเบลอ)", ["Auto (สุ่ม)"] + DEPTH_LIST)
+    composition = st.selectbox("4. COMPOSITION (พื้นที่ว่าง)", ["Auto (สุ่ม)"] + COMPOSITION_LIST)
 with col3:
-    emotion_control = st.selectbox("อารมณ์/สีหน้า (Emotion)", [
-        "None (ไม่ระบุ)", "Auto (สุ่มตามสถานการณ์)", "Natural warm smile", "Candid and authentic", "Deeply focused", "Relaxed and calm", "Excited and joyful"
-    ], index=1)
-    camera_angle = st.selectbox("มุมกล้อง (Camera Angle)", [
-        "None (ไม่ระบุ)", "Auto (ให้ AI สุ่มมุมกล้อง)", "Eye-level shot", "High angle top-down shot", "Low angle hero shot", "Over-the-shoulder shot"
-    ], index=1)
-
-st.markdown("---")
-st.subheader("2️⃣ การจัดองค์ประกอบ (Composition & Style)")
-
-col4, col5, col6, col7 = st.columns(4)
-
-with col4:
-    copy_space_list = [
-        "None (ไม่ระบุ)",
-        "Auto (ให้ AI จัดวางเอง)",
-        "subject positioned on the right, wide empty copy space on the left",
-        "subject positioned on the left, wide empty copy space on the right",
-        "centered subject, wide empty negative space around",
-        "subject at the bottom, wide empty copy space at the top"
-    ]
-    copy_space = st.selectbox("พื้นที่ว่าง (Copy Space)", copy_space_list, index=1)
-
-with col5:
-    niche_list = ["None (ไม่ระบุ)", "Auto (ให้ AI สุ่ม)", "Eco-friendly", "Inclusive Health", "Sustainable Fashion", "Green Tech", "Sustainability", "Digital Nomad", "Mental Health", "Cybersecurity", "CSR", "Corporate Data", "Holiday Marketing", "Cultural Heritage"]
-    niche_insights = st.selectbox("เจาะจงตลาด (Niche)", niche_list, index=1)
-
-with col6:
-    color_palette_list = [
-        "None (ไม่ระบุ)", "Auto (ให้ AI สุ่ม)", "Natural & True-to-life", "Bright & Airy", "Neutral & Clean", "Warm & Inviting", "Cool & Professional", "Vibrant & Punchy", "Muted & Earthy", "Festive Red & Gold", "Winter Blue & Silver", "Vibrant Cultural Colors"
-    ]
-    color_palette = st.selectbox("โทนสี (Color)", color_palette_list, index=1)
-
-with col7:
-    lighting_style = st.selectbox("สไตล์แสง (Lighting)", [
-        "None (ไม่ระบุ)", "Auto (ให้ AI สุ่ม)", "Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Modern Neon Accent", "Clean Office Light", "Dreamy Diffused Light", "Warm Cozy Bokeh Lighting", "Cinematic Festival Lighting"
-    ], index=1)
-
-st.markdown("---")
-st.subheader("3️⃣ ตั้งค่าไฟล์และขั้นสูง (Advanced Settings)")
-
-with st.expander("⚙️ เปิดเพื่อตั้งค่า สัดส่วนภาพ, จำนวน, และ Negative Prompt", expanded=False):
-    col8, col9 = st.columns(2)
-    with col8:
-        col8_1, col8_2 = st.columns(2)
-        with col8_1:
-            aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "9:16", "1:1"], index=0)
-        with col8_2:
-            prompt_count = st.number_input("จำนวน Prompts", min_value=10, max_value=200, step=10, value=50)
-    with col9:
-        negative_prompt = st.text_input("สิ่งที่ไม่ต้องการ (--no)", value="text, watermark, logo, signatures, ugly, deformed, bad anatomy, illustration, 3d, vector")
+    mood = st.selectbox("5. MOOD / TONE (โทนสี)", ["Auto (สุ่ม)"] + MOOD_TONE_LIST)
+    use_case = st.selectbox("6. USE-CASE (การจัดวาง)", ["Auto (สุ่ม)"] + USE_CASE_LIST)
 
 st.markdown("---")
 
 # --- ปุ่มประมวลผล ---
-if st.button("🚀 Generate Prompts", use_container_width=True):
-    
-    main_idea = idea_manual.strip()
-    is_holiday_mode = "Seasonal" in work_mode
-    
-    # 🌟 1. หาค่าตั้งต้น (Subject)
-    preset_text = ""
-    if is_holiday_mode:
-        preset_text = WESTERN_HOLIDAYS_DICT[holiday_choice] if "Western" in holiday_region else ASIAN_HOLIDAYS_DICT[holiday_choice]
-    elif ready_idea not in ["None (ไม่ระบุ)", "Auto (ให้ AI สุ่ม)"] and not ready_idea.startswith("---"):
-        preset_text = ready_idea.split("] ")[1] if "]" in ready_idea else ready_idea
-
-    # รวม Manual Idea กับ Preset (ถ้ามี)
-    active_subject = ""
-    if main_idea and preset_text:
-        active_subject = f"{preset_text}, {main_idea}"
-    elif main_idea:
-        active_subject = main_idea
-    elif preset_text:
-        active_subject = preset_text
-    else:
-        active_subject = "people" if include_human == "Yes" else "objects"
-
-    group_keywords = ['team', 'family', 'couple', 'parents', 'meeting', 'collaboration', 'group', 'colleagues', 'party', 'celebration', 'gathering']
-    is_group = any(kw in active_subject.lower() for kw in group_keywords)
-
-    # 🌟 2. หาหมวดหมู่สถานที่ (Environment Routing)
-    target_env = "LIFESTYLE" 
-    if is_holiday_mode:
-        target_env = "HOLIDAY_INDOOR" if any(x in active_subject.lower() for x in ["indoor", "room", "dinner", "party", "home", "tree", "diya"]) else "HOLIDAY_OUTDOOR"
-    else:
-        full_context = active_subject.lower()
-        if any(x in full_context for x in ["cyber", "ai", "tech", "hacker", "data", "server"]): target_env = "CYBER_TECH"
-        elif any(x in full_context for x in ["eco", "sustainab", "solar", "green", "farm"]): target_env = "ECO_SUSTAINABILITY"
-        elif any(x in full_context for x in ["school", "class", "study", "learn", "student"]): target_env = "EDUCATION"
-        elif any(x in full_context for x in ["delivery", "warehouse", "box", "pack", "logistics"]): target_env = "ECOMMERCE_LOGISTICS"
-        elif any(x in full_context for x in ["food", "cook", "kitchen", "salad", "diet", "meal"]): target_env = "FOOD_DIET"
-        elif any(x in full_context for x in ["beach", "mountain", "nature", "outdoor", "trail", "river", "sakura"]): target_env = "OUTDOOR"
-        elif any(x in full_context for x in ["doctor", "telemedicine", "medical", "health", "hospital"]): target_env = "HEALTHCARE"
-        elif any(x in full_context for x in ["yoga", "meditation", "wellness", "mental", "mindful"]): target_env = "WELLNESS"
-        elif any(x in full_context for x in ["office", "business", "corporate", "bus", "fin", "meeting"]): target_env = "CORPORATE"
-        elif ready_idea == "Auto (ให้ AI สุ่ม)" and not main_idea:
-            # ถ้าเป็น Auto ล้วนๆ ให้สุ่มสถานที่ใหม่เลยเพื่อความหลากหลาย
-            target_env = random.choice([k for k in ENV_GROUPS.keys() if "HOLIDAY" not in k])
-
+if st.button("🚀 รันระบบ (Generate Background Prompts)", use_container_width=True):
     prompts = []
     
     for i in range(prompt_count):
-        prompt_tags = [] # เก็บชิ้นส่วนของ Prompt
+        # ดึงค่า (ถ้าเลือก Auto ให้สุ่มจาก List)
+        sel_scene = random.choice(SCENE_LIST) if scene == "Auto (สุ่ม)" else scene
+        sel_light = random.choice(LIGHTING_LIST) if lighting == "Auto (สุ่ม)" else lighting
+        sel_depth = random.choice(DEPTH_LIST) if depth == "Auto (สุ่ม)" else depth
+        sel_comp = random.choice(COMPOSITION_LIST) if composition == "Auto (สุ่ม)" else composition
+        sel_mood = random.choice(MOOD_TONE_LIST) if mood == "Auto (สุ่ม)" else mood
+        sel_use = random.choice(USE_CASE_LIST) if use_case == "Auto (สุ่ม)" else use_case
+
+        # ฐาน Prompt เพื่อบังคับความเป็นงาน Commercial
+        base_core = "empty background for commercial product placement, high-end commercial stock photography, photorealistic"
         
-        # -----------------------------------------------------
-        # ระบบตรวจสอบตรรกะ None / Auto แบบตรงไปตรงมา
-        # -----------------------------------------------------
-
-        # 1. Medium (ค่าตายตัวเพื่อให้ได้ภาพ Stock เสมอ)
-        prompt_tags.append("high-end commercial stock photography")
-        prompt_tags.append("photorealistic")
-
-        # 2. Camera Angle (มุมกล้อง)
-        cam_text = ""
-        if camera_angle == "None (ไม่ระบุ)":
-            cam_text = ""
-        elif camera_angle == "Auto (ให้ AI สุ่มมุมกล้อง)":
-            cam_text = random.choice(["Eye-level shot", "High angle top-down shot", "Low angle hero shot", "Over-the-shoulder shot"])
-        else:
-            cam_text = camera_angle
-            
-        if cam_text: prompt_tags.append(cam_text)
-
-        # 3. Framing & Lens (ระยะภาพและเลนส์ - ผูกไว้ด้วยกันเพื่อให้ภาพออกมาสวย)
-        if copy_space not in ["None (ไม่ระบุ)", "Auto (ให้ AI จัดวางเอง)"]:
-            framing = "wide pulled-back shot"
-            lens_spec = "shot on Sony A7R IV, 35mm lens, f/2.8"
-            bokeh_effect = "beautiful bokeh, blurred background"
-        else:
-            framing_choice = random.choice([
-                ("wide shot", "shot on Sony A7R IV, 35mm lens, f/2.8", "beautiful bokeh, softly blurred background"), 
-                ("medium shot", "shot on Canon EOS R5, 50mm lens, f/1.8", "shallow depth of field, blurred background"), 
-                ("close-up portrait", "shot on Fujifilm GFX 100, 85mm lens, f/1.2", "creamy bokeh, heavily blurred background, extreme shallow depth of field")
-            ])
-            framing, lens_spec, bokeh_effect = framing_choice[0], framing_choice[1], framing_choice[2]
-
-        # 4. Human & Demographics (ประชากรศาสตร์)
-        if include_human == "Yes":
-            # ชุดแต่งกายอิงตาม Environment
-            if is_holiday_mode: 
-                if "Asian" in holiday_region: clothes = random.choice(["traditional cultural clothing", "modern festive attire"])
-                else: clothes = random.choice(["cozy seasonal sweaters", "elegant festive evening wear"])
-            elif target_env == "CORPORATE": clothes = "professional business attire"
-            elif target_env == "CYBER_TECH": clothes = "modern tech-wear or smart casual"
-            elif target_env == "HEALTHCARE": clothes = "medical scrubs or professional clinic uniform"
-            elif target_env == "OUTDOOR": clothes = "outdoor hiking activewear"
-            else: clothes = "modern smart casual"
-
-            # วิเคราะห์เงื่อนไข Demographics
-            if demo_control == "None (ไม่ระบุ)":
-                if any(kw in active_subject.lower() for kw in ['couple', 'two people']): demo_str = f"a couple dressed in {clothes}"
-                elif any(kw in active_subject.lower() for kw in ['family', 'parents']): demo_str = f"a family dressed in {clothes}"
-                elif is_group: demo_str = f"a group of people dressed in {clothes}"
-                else: demo_str = f"a person dressed in {clothes}"
-            else:
-                if demo_control == "Auto (ให้ AI สุ่ม)":
-                    selected_eth, selected_age = random.choice(ethnicities), random.choice(ages)
-                elif demo_control == "Asian Only": selected_eth, selected_age = "Asian", random.choice(ages)
-                elif demo_control == "Caucasian Only": selected_eth, selected_age = "Caucasian", random.choice(ages)
-                elif demo_control == "Black Only": selected_eth, selected_age = "Black", random.choice(ages)
-                elif demo_control == "Seniors Only": selected_eth, selected_age = random.choice(ethnicities), "senior"
-                elif demo_control == "Young Adults Only": selected_eth, selected_age = random.choice(ethnicities), "young adult"
-                
-                if any(kw in active_subject.lower() for kw in ['couple', 'two people']):
-                    demo_str = f"{get_article(selected_age)} {selected_age} couple dressed in {clothes}"
-                elif any(kw in active_subject.lower() for kw in ['family', 'parents']):
-                    demo_str = f"a diverse family dressed in {clothes}"
-                elif is_group:
-                    demo_str = f"a diverse group of people dressed in {clothes}"
-                else:
-                    demo_str = f"{get_article(selected_age)} {selected_age} {selected_eth} {random.choice(genders)} dressed in {clothes}"
-            
-            prompt_tags.append(f"{framing} of {demo_str}")
-
-            # 5. Action (การกระทำ)
-            action_text = ""
-            if ready_idea == "None (ไม่ระบุ)":
-                action_text = main_idea if main_idea else ""
-            elif ready_idea == "Auto (ให้ AI สุ่ม)":
-                action_text = main_idea if main_idea else random.choice(ACTION_GROUPS.get("HOLIDAY" if is_holiday_mode else target_env, ["working"]))
-            else:
-                action_text = active_subject
-
-            if action_text: prompt_tags.append(action_text)
-
-            # 6. Emotion (อารมณ์)
-            if emotion_control != "None (ไม่ระบุ)":
-                if emotion_control == "Auto (สุ่มตามสถานการณ์)":
-                    prompt_tags.append(get_emotion_phrase("Auto", active_subject))
-                else:
-                    mapping = {"Natural warm smile": "showing a natural warm smile", "Candid and authentic": "showing a candid and authentic expression", "Deeply focused": "showing a deeply focused expression", "Relaxed and calm": "exhibiting a relaxed and calm mood", "Excited and joyful": "showing an excited and joyful expression"}
-                    prompt_tags.append(mapping.get(emotion_control, f"showing a {emotion_control.lower()} expression"))
-                    
-        else: # กรณี No Human (Flat Lay)
-            obj_focus = active_subject if active_subject != "objects" else random.choice(OBJECT_GROUPS.get("HOLIDAY" if is_holiday_mode else target_env, ["everyday items"]))
-            prompt_tags.append(f"flat lay photography, top-down overhead view of {obj_focus}")
-            prompt_tags.append("knolling aesthetic, perfectly organized layout")
-            lens_spec = "shot on Sony A7R IV, 35mm lens, f/8.0, sharp focus across entire layout"
-            bokeh_effect = ""
-
-        # 7. Niche Concept
-        if niche_insights != "None (ไม่ระบุ)":
-            if niche_insights == "Auto (ให้ AI สุ่ม)":
-                valid_niches = [n for n in niche_list if "Auto" not in n and "None" not in n]
-                prompt_tags.append(f"{random.choice(valid_niches)} concept")
-            else:
-                prompt_tags.append(f"{niche_insights} concept")
-
-        # 8. Environment (สถานที่ตั้ง)
-        raw_location = random.choice(ENV_GROUPS.get("HOLIDAY_INDOOR" if is_holiday_mode else target_env, ["modern room"]))
-        if include_human == "No":
-            prompt_tags.append(f"arranged flat on a surface within {get_article(raw_location)} {raw_location}")
-        else:
-            prompt_tags.append(f"set in {get_article(raw_location)} {raw_location}")
-            if bokeh_effect: prompt_tags.append(bokeh_effect)
-
-        # 9. Copy Space
-        if copy_space not in ["None (ไม่ระบุ)", "Auto (ให้ AI จัดวางเอง)"]:
-            prompt_tags.append(copy_space)
-
-        # 10. Color & Lighting
-        if color_palette != "None (ไม่ระบุ)":
-            if color_palette == "Auto (ให้ AI สุ่ม)":
-                auto_c = random.choice(["Warm & Inviting", "Cool & Professional", "Neutral & Clean", "Bright & Airy", "Muted & Earthy"])
-                prompt_tags.append(f"using {get_article(auto_c)} {auto_c} color palette")
-            else:
-                prompt_tags.append(f"using {get_article(color_palette)} {color_palette} color palette")
-
-        if lighting_style != "None (ไม่ระบุ)":
-            if lighting_style == "Auto (ให้ AI สุ่ม)":
-                auto_l = random.choice(["Soft Natural Light", "Professional Studio Light", "Golden Hour Sunlight", "Clean Office Light"])
-                prompt_tags.append(f"lit by {auto_l}")
-            else:
-                prompt_tags.append(f"lit by {lighting_style}")
-
-        # 11. Lens & Tech
-        prompt_tags.append(lens_spec)
-
-        # --- ประกอบร่าง Prompt ---
-        clean_tags = [p for p in prompt_tags if p]
-        clean_base = ", ".join(clean_tags)
+        # ประกอบร่าง Prompt ตามโครงสร้าง 6 โมดูล
+        prompt_elements = [
+            base_core,
+            sel_scene,
+            sel_light,
+            sel_depth,
+            sel_comp,
+            f"{sel_mood} mood",
+            sel_use
+        ]
         
+        clean_base = ", ".join(prompt_elements)
+        
+        # สุ่มค่า Stylize เล็กน้อยเพื่อให้ Midjourney ไม่จำเจ
         stylize_value = random.randint(100, 250)
+        
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
-            
-        neg_prompt = negative_prompt.strip()
-        if neg_prompt:
-            final_prompt += f" --no {neg_prompt}"
+        if negative_prompt:
+            final_prompt += f" --no {negative_prompt.strip()}"
             
         prompts.append(final_prompt)
+        
+    # บันทึกลง Session State
+    st.session_state['prompts'] = prompts
+    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (ฉากหลังสาย Ad-Ready ล้วนๆ)")
 
-    # --- เตรียมไฟล์สำหรับดาวน์โหลด ---
-    prompt_text = "\n".join(prompts)
-    
-    st.success(f"✅ สร้างสำเร็จ {prompt_count} Prompts (ระบบลอจิกใหม่ ตัด None ทิ้ง / สุ่ม Auto 100%)")
-    
-    st.markdown("### 👀 ทดสอบนำไปเจน (5 รายการแรก)")
-    for p in prompts[:5]:
+# แสดงผลและดาวน์โหลด
+if 'prompts' in st.session_state:
+    st.markdown("### 👀 Preview Prompts (5 รายการแรก)")
+    for p in st.session_state['prompts'][:5]:
         st.code(p, language="text")
-
+        
+    prompt_text = "\n".join(st.session_state['prompts'])
     st.download_button(
-        label="💾 ดาวน์โหลดไฟล์ .txt สำหรับ Midjourney",
-        data=prompt_text,
-        file_name="midjourney_master_production.txt",
+        label="💾 ดาวน์โหลดไฟล์ Prompts (.txt)", 
+        data=prompt_text, 
+        file_name="mj_background_prompts.txt", 
         mime="text/plain",
         use_container_width=True
     )
