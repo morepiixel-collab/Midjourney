@@ -1,20 +1,42 @@
 import streamlit as st
 import random
+import re
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
-st.set_page_config(page_title="Background Master Pro", page_icon="🖼️", layout="wide")
+st.set_page_config(page_title="Background Master Pro: Holiday Edition", page_icon="🖼️", layout="wide")
 
 # --- 🔧 ข้อมูลโมดูล (แยกหมวด ปกติ vs เทศกาล) ---
 
-# 1. SCENE
+# 1. SCENE (โหมดปกติ)
 SCENE_NORMAL = [
     "modern office hallway", "glass corridor", "startup workspace", 
-    "meeting room", "city view through office glass"
+    "meeting room", "city view through office glass", "minimalist desk surface",
+    "clean architectural background", "abstract corporate space"
 ]
+
+# 1. SCENE (โหมดเทศกาล - ระบุเดือนใน UI แต่จะถูกตัดออกตอนเจน Prompt)
 SCENE_HOLIDAY = [
-    "luxury hotel lobby decorated for Christmas", "modern office entrance with Lunar New Year decor",
-    "high-end restaurant interior for Valentine's", "minimalist startup lounge with festive decorations",
-    "urban rooftop terrace with summer sunset view", "spooky but elegant Halloween setup"
+    "[Jan] New Year's Day celebratory background",
+    "[Jan-Feb] Lunar New Year traditional red and gold background",
+    "[Feb] Valentine's Day romantic high-end restaurant interior",
+    "[Mar] St. Patrick's Day green festive background",
+    "[Mar] Holi Festival vibrant colorful background",
+    "[Mar-Apr] Easter pastel spring background",
+    "[Apr] Songkran Festival bright summer background",
+    "[Apr-May] Sakura Season peaceful spring background",
+    "[May] Mother's Day warm elegant background",
+    "[May-Jun] Dragon Boat Festival traditional Asian background",
+    "[Jun] Father's Day masculine elegant background",
+    "[Jul] Summer Vacation festive sunny background",
+    "[Aug-Sep] Back to School modern educational background",
+    "[Sep-Oct] Mid-Autumn Festival elegant night background",
+    "[Oct] Halloween spooky but elegant setup",
+    "[Oct-Nov] Diwali glowing lights festive background",
+    "[Nov] Thanksgiving warm autumn harvest background",
+    "[Nov] Black Friday / Cyber Monday retail shopping background",
+    "[Nov] Loy Krathong beautiful night river background",
+    "[Dec] Christmas luxury hotel lobby with tree",
+    "[Dec] New Year's Eve glamorous countdown party background"
 ]
 
 # 2. LIGHTING
@@ -25,7 +47,7 @@ LIGHTING_NORMAL = [
 LIGHTING_HOLIDAY = [
     "festive warm bokeh lighting", "red and gold ambient glow", 
     "soft romantic diffused light", "vibrant high-contrast summer sun",
-    "moody orange and purple night glow"
+    "moody orange and purple night glow", "bright colorful festive lighting"
 ]
 
 # โมดูลที่ใช้ร่วมกันได้
@@ -49,7 +71,7 @@ with st.sidebar:
 
 # --- UI พื้นที่หลัก ---
 st.title("🖼️ Commercial Background Engine")
-st.markdown("ระบบปั่น Prompt สายฉากหลังเว้นพื้นที่ Copy Space")
+st.markdown("ระบบปั่น Prompt สายฉากหลังเว้นพื้นที่ Copy Space สำหรับงานโฆษณา")
 st.markdown("---")
 
 # 🌟 ปุ่มสลับโหมดหลัก 🌟
@@ -59,6 +81,10 @@ work_mode = st.radio(
     ["🏢 โหมดปกติ (Corporate & Business)", "🎄 โหมดเทศกาล (Holidays & Seasonal)"],
     horizontal=True
 )
+
+if "เทศกาล" in work_mode:
+    st.info("💡 **กฎ 3 เดือน:** เพื่อให้ขายดีสุด ควรเจนภาพและอัปโหลดล่วงหน้าอย่างน้อย 90 วันก่อนถึงเดือนของเทศกาลนั้นๆ")
+
 st.markdown("---")
 
 # โหลดข้อมูลตามโหมดที่เลือก
@@ -84,7 +110,12 @@ if st.button("🚀 รันระบบ (Generate Prompts)", use_container_widt
     prompts = []
     
     for i in range(prompt_count):
-        sel_scene = random.choice(current_scenes) if scene == "Auto (สุ่ม)" else scene
+        # สุ่มค่า
+        sel_scene_raw = random.choice(current_scenes) if scene == "Auto (สุ่ม)" else scene
+        
+        # ตัดวงเล็บเดือน [Jan], [Feb] ออกจาก Prompt เพื่อไม่ให้ Midjourney งง
+        sel_scene = re.sub(r'\[.*?\]\s*', '', sel_scene_raw).strip()
+        
         sel_light = random.choice(current_lights) if lighting == "Auto (สุ่ม)" else lighting
         sel_depth = random.choice(DEPTH_LIST) if depth == "Auto (สุ่ม)" else depth
         sel_comp = random.choice(COMPOSITION_LIST) if composition == "Auto (สุ่ม)" else composition
@@ -96,7 +127,8 @@ if st.button("🚀 รันระบบ (Generate Prompts)", use_container_widt
         prompt_elements = [base_core, sel_scene, sel_light, sel_depth, sel_comp, f"{sel_mood} mood", sel_use]
         
         clean_base = ", ".join(prompt_elements)
-        # ถ้าเป็นเทศกาล ดัน Stylize สูงขึ้นนิดหน่อยให้ภาพดูอลังการขึ้น
+        
+        # ถ้าเป็นเทศกาล ดัน Stylize สูงขึ้นนิดหน่อยให้ภาพดูมีมิติอลังการขึ้น
         stylize_value = random.randint(150, 300) if "เทศกาล" in work_mode else random.randint(100, 250)
         
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
