@@ -3,58 +3,58 @@ import random
 import re
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
-st.set_page_config(page_title="Background Master Pro: Holiday Edition", page_icon="🖼️", layout="wide")
+st.set_page_config(page_title="Background Master Pro: Ultimate Edition", page_icon="👑", layout="wide")
 
-# --- 🔧 ข้อมูลโมดูล (แยกหมวด ปกติ vs เทศกาล) ---
+# --- 🔧 ข้อมูลโมดูล (แยก 3 หมวด: ปกติ, เทศกาล, ไฮเอนด์) ---
 
-# 1. SCENE (โหมดปกติ)
+# 1. SCENE (โหมดปกติ - Corporate & Mass)
 SCENE_NORMAL = [
     "modern office hallway", "glass corridor", "startup workspace", 
     "meeting room", "city view through office glass", "minimalist desk surface",
     "clean architectural background", "abstract corporate space"
 ]
 
-# 1. SCENE (โหมดเทศกาล - ระบุเดือนใน UI แต่จะถูกตัดออกตอนเจน Prompt)
+# 2. SCENE (โหมดเทศกาล)
 SCENE_HOLIDAY = [
-    "[Jan] New Year's Day celebratory background",
     "[Jan-Feb] Lunar New Year traditional red and gold background",
     "[Feb] Valentine's Day romantic high-end restaurant interior",
-    "[Mar] St. Patrick's Day green festive background",
-    "[Mar] Holi Festival vibrant colorful background",
-    "[Mar-Apr] Easter pastel spring background",
     "[Apr] Songkran Festival bright summer background",
-    "[Apr-May] Sakura Season peaceful spring background",
-    "[May] Mother's Day warm elegant background",
-    "[May-Jun] Dragon Boat Festival traditional Asian background",
-    "[Jun] Father's Day masculine elegant background",
-    "[Jul] Summer Vacation festive sunny background",
-    "[Aug-Sep] Back to School modern educational background",
-    "[Sep-Oct] Mid-Autumn Festival elegant night background",
     "[Oct] Halloween spooky but elegant setup",
-    "[Oct-Nov] Diwali glowing lights festive background",
-    "[Nov] Thanksgiving warm autumn harvest background",
     "[Nov] Black Friday / Cyber Monday retail shopping background",
-    "[Nov] Loy Krathong beautiful night river background",
-    "[Dec] Christmas luxury hotel lobby with tree",
-    "[Dec] New Year's Eve glamorous countdown party background"
+    "[Dec] Christmas luxury hotel lobby with tree"
+] # ตัดมาเฉพาะตัวท็อปเพื่อความกระชับ
+
+# 3. SCENE (โหมด 💎 Premium Product & Hyper-Niche) - โคตรของโคตรทำเงิน
+SCENE_PREMIUM = [
+    "minimalist natural stone podium for product display",
+    "premium marble pedestal with soft shadows",
+    "rustic wooden block on elegant neutral background",
+    "sleek frosted glass display stand",
+    "geometric matte white display platforms",
+    "marble counter in premium anti-aging wellness clinic",
+    "bright clean energy showroom with large bright windows",
+    "luxury spa reception desk with organic textures",
+    "high-tech minimalist electric vehicle display area",
+    "premium minimalist skincare laboratory counter",
+    "modern sustainable architecture lobby with indoor plants"
 ]
 
-# 2. LIGHTING
-LIGHTING_NORMAL = [
-    "natural side lighting", "morning warm light", "sunset golden light", 
-    "cool office light", "night artificial glow"
-]
-LIGHTING_HOLIDAY = [
-    "festive warm bokeh lighting", "red and gold ambient glow", 
-    "soft romantic diffused light", "vibrant high-contrast summer sun",
-    "moody orange and purple night glow", "bright colorful festive lighting"
+# LIGHTING (แยกตามโหมด)
+LIGHTING_NORMAL = ["natural side lighting", "morning warm light", "sunset golden light", "cool office light"]
+LIGHTING_HOLIDAY = ["festive warm bokeh lighting", "red and gold ambient glow", "soft romantic diffused light"]
+LIGHTING_PREMIUM = [
+    "soft diffused studio lighting", 
+    "high-end commercial lighting setup", 
+    "dramatic spotlight with soft falloff", 
+    "window light passing through sheer curtains",
+    "clean bright shadowless lighting"
 ]
 
-# โมดูลที่ใช้ร่วมกันได้
+# โมดูลที่ใช้ร่วมกัน
 DEPTH_LIST = ["heavy blur background", "medium depth of field", "light blur (semi sharp)"]
-COMPOSITION_LIST = ["copy space left", "copy space right", "copy space center", "top copy space (vertical)"]
-MOOD_TONE_LIST = ["neutral corporate", "blue tech tone", "warm realistic", "dark moody", "festive vibrant", "clean airy minimalist"]
-USE_CASE_LIST = ["minimal clean composition", "strong leading lines", "wide banner composition", "vertical ad layout"]
+COMPOSITION_LIST = ["copy space left", "copy space right", "copy space center", "top copy space (vertical)", "empty space for product placement"]
+MOOD_TONE_LIST = ["neutral corporate", "blue tech tone", "warm realistic", "clean airy minimalist", "earthy organic tones", "luxurious elegant tones"]
+USE_CASE_LIST = ["minimal clean composition", "strong leading lines", "macro close-up texture", "wide banner composition"]
 
 # --- UI Sidebar ---
 with st.sidebar:
@@ -65,36 +65,45 @@ with st.sidebar:
     st.subheader("🛡️ Pure Photography Mode")
     negative_prompt = st.text_area(
         "Negative Prompt (--no)", 
-        value="vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures, people, person, face, hand", 
+        value="vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box", 
         height=100
     )
+    st.info("💡 เพิ่มคำว่า 'product, bottle, box' ลงไปในโหมดพรีเมียม เพื่อกันไม่ให้ AI วางสินค้าปลอมๆ ลงไปบนแท่น เราต้องการแค่ 'แท่นเปล่าๆ' ให้ลูกค้าเอาไปแต่งต่อเอง")
 
 # --- UI พื้นที่หลัก ---
-st.title("🖼️ Commercial Background Engine")
-st.markdown("ระบบปั่น Prompt สายฉากหลังเว้นพื้นที่ Copy Space สำหรับงานโฆษณา")
+st.title("👑 Commercial Background Engine")
+st.markdown("ระบบปั่น Prompt สายฉากหลังโฆษณา ครอบคลุมตั้งแต่งาน Mass ไปจนถึงงาน Premium Mockup")
 st.markdown("---")
 
 # 🌟 ปุ่มสลับโหมดหลัก 🌟
 st.subheader("🎯 เลือกโหมดการทำงาน (Work Mode)")
 work_mode = st.radio(
     "สลับชุดข้อมูลอัตโนมัติ:", 
-    ["🏢 โหมดปกติ (Corporate & Business)", "🎄 โหมดเทศกาล (Holidays & Seasonal)"],
+    [
+        "🏢 โหมดปกติ (Corporate & Mass)", 
+        "🎄 โหมดเทศกาล (Holidays & Seasonal)", 
+        "💎 โหมด Premium Product (Podium & High-End)"
+    ],
     horizontal=True
 )
-
-if "เทศกาล" in work_mode:
-    st.info("💡 **กฎ 3 เดือน:** เพื่อให้ขายดีสุด ควรเจนภาพและอัปโหลดล่วงหน้าอย่างน้อย 90 วันก่อนถึงเดือนของเทศกาลนั้นๆ")
 
 st.markdown("---")
 
 # โหลดข้อมูลตามโหมดที่เลือก
-current_scenes = SCENE_HOLIDAY if "เทศกาล" in work_mode else SCENE_NORMAL
-current_lights = LIGHTING_HOLIDAY if "เทศกาล" in work_mode else LIGHTING_NORMAL
+if "พรีเมียม" in work_mode or "Premium" in work_mode:
+    current_scenes = SCENE_PREMIUM
+    current_lights = LIGHTING_PREMIUM
+elif "เทศกาล" in work_mode:
+    current_scenes = SCENE_HOLIDAY
+    current_lights = LIGHTING_HOLIDAY
+else:
+    current_scenes = SCENE_NORMAL
+    current_lights = LIGHTING_NORMAL
 
 st.subheader("📍 กำหนดโครงสร้าง (Modules)")
 col1, col2, col3 = st.columns(3)
 with col1:
-    scene = st.selectbox("1. SCENE (สถานที่)", ["Auto (สุ่ม)"] + current_scenes)
+    scene = st.selectbox("1. SCENE (สถานที่/แท่นวาง)", ["Auto (สุ่ม)"] + current_scenes)
     lighting = st.selectbox("2. LIGHTING (แสง)", ["Auto (สุ่ม)"] + current_lights)
 with col2:
     depth = st.selectbox("3. DEPTH (ความเบลอ)", ["Auto (สุ่ม)"] + DEPTH_LIST)
@@ -112,9 +121,7 @@ if st.button("🚀 รันระบบ (Generate Prompts)", use_container_widt
     for i in range(prompt_count):
         # สุ่มค่า
         sel_scene_raw = random.choice(current_scenes) if scene == "Auto (สุ่ม)" else scene
-        
-        # ตัดวงเล็บเดือน [Jan], [Feb] ออกจาก Prompt เพื่อไม่ให้ Midjourney งง
-        sel_scene = re.sub(r'\[.*?\]\s*', '', sel_scene_raw).strip()
+        sel_scene = re.sub(r'\[.*?\]\s*', '', sel_scene_raw).strip() # ตัดวงเล็บเดือนออก
         
         sel_light = random.choice(current_lights) if lighting == "Auto (สุ่ม)" else lighting
         sel_depth = random.choice(DEPTH_LIST) if depth == "Auto (สุ่ม)" else depth
@@ -122,14 +129,23 @@ if st.button("🚀 รันระบบ (Generate Prompts)", use_container_widt
         sel_mood = random.choice(MOOD_TONE_LIST) if mood == "Auto (สุ่ม)" else mood
         sel_use = random.choice(USE_CASE_LIST) if use_case == "Auto (สุ่ม)" else use_case
 
-        base_core = "empty commercial background for product placement, high-end stock photography, photorealistic"
+        # ปรับ Base Core ให้คมขึ้นสำหรับงานพรีเมียม
+        if "Premium" in work_mode:
+            base_core = "empty product mockup background, photorealistic still life photography, extreme high-end commercial asset"
+        else:
+            base_core = "empty commercial background for product placement, high-end stock photography, photorealistic"
         
         prompt_elements = [base_core, sel_scene, sel_light, sel_depth, sel_comp, f"{sel_mood} mood", sel_use]
         
         clean_base = ", ".join(prompt_elements)
         
-        # ถ้าเป็นเทศกาล ดัน Stylize สูงขึ้นนิดหน่อยให้ภาพดูมีมิติอลังการขึ้น
-        stylize_value = random.randint(150, 300) if "เทศกาล" in work_mode else random.randint(100, 250)
+        # ปรับ Stylize
+        if "Premium" in work_mode:
+            stylize_value = random.randint(50, 150) # โหมดนี้ต้องการความ "จริง" สูงสุด ไม่ต้องให้ AI ปรุงแต่งเยอะ (Stylize ต่ำลง)
+        elif "เทศกาล" in work_mode:
+            stylize_value = random.randint(150, 300)
+        else:
+            stylize_value = random.randint(100, 250)
         
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
         if negative_prompt:
@@ -138,7 +154,7 @@ if st.button("🚀 รันระบบ (Generate Prompts)", use_container_widt
         prompts.append(final_prompt)
         
     st.session_state['prompts'] = prompts
-    st.success(f"✅ เจนเรียบร้อย {prompt_count} Prompts สำหรับ {work_mode.split(' ')[1]}")
+    st.success(f"✅ เจนเรียบร้อย {prompt_count} Prompts สำหรับโหมด {work_mode.split(' ')[1]}")
 
 if 'prompts' in st.session_state:
     st.markdown("### 👀 ตัวอย่าง Prompt (5 รายการแรก)")
