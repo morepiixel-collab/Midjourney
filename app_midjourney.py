@@ -29,21 +29,58 @@ SCENE_NORMAL = [
     "bright artisanal bakery window display area"
 ]
 
-# --- 🎄 โหมด 2: HOLIDAY (Festivals & Seasonal Podiums) ---
+# --- 🎄 โหมด 2: HOLIDAY (Festivals & Seasonal Podiums เรียงตามเดือน) ---
 SCENE_HOLIDAY = [
-    # พื้นหลังเทศกาลทั่วไป
+    # --- มกราคม (January) ---
+    "[Jan] New Year's Day celebratory background",
     "[Jan-Feb] Lunar New Year traditional red and gold background",
-    "[Feb] Valentine's Day romantic high-end restaurant interior",
-    "[Apr] Songkran Festival bright summer background",
-    "[Oct] Halloween spooky but elegant setup",
-    "[Dec] Christmas luxury hotel lobby with tree",
-    # 💎 ผสมแท่นวางลงในเทศกาล (ทำเงินสูงสุด)
     "[Jan-Feb] premium red and gold lacquer podium for Lunar New Year product display",
+    
+    # --- กุมภาพันธ์ (February) ---
+    "[Feb] Valentine's Day romantic high-end restaurant interior",
     "[Feb] romantic frosted pink glass podium for Valentine's Day skincare ads",
+    
+    # --- มีนาคม (March) ---
+    "[Mar] St. Patrick's Day green festive background",
+    "[Mar] Holi Festival vibrant colorful background",
+    "[Mar-Apr] Easter pastel spring background",
+    
+    # --- เมษายน (April) ---
+    "[Apr] Songkran Festival bright summer background",
     "[Apr] smooth white marble podium with soft water ripples for Songkran summer theme",
+    "[Apr-May] Sakura Season peaceful spring background",
+    
+    # --- พฤษภาคม (May) ---
+    "[May] Mother's Day warm elegant background",
+    "[May-Jun] Dragon Boat Festival traditional Asian background",
+    
+    # --- มิถุนายน (June) ---
+    "[Jun] Father's Day masculine elegant background",
+    
+    # --- กรกฎาคม (July) ---
+    "[Jul] Summer Vacation festive sunny background",
+    
+    # --- สิงหาคม (August) ---
+    "[Aug-Sep] Back to School modern educational background",
+    
+    # --- กันยายน (September) ---
+    "[Sep-Oct] Mid-Autumn Festival elegant night background",
+    
+    # --- ตุลาคม (October) ---
+    "[Oct] Halloween spooky but elegant setup",
+    "[Oct-Nov] Diwali glowing lights festive background",
     "[Oct-Nov] luxury dark obsidian platform with glowing diya lamps for Diwali concept",
+    
+    # --- พฤศจิกายน (November) ---
+    "[Nov] Thanksgiving warm autumn harvest background",
     "[Nov] matte white geometric steps decorated with subtle autumn leaves for Thanksgiving",
-    "[Dec] minimalist stone pedestal surrounded by elegant Christmas pine and soft bokeh"
+    "[Nov] Black Friday / Cyber Monday retail shopping background",
+    "[Nov] Loy Krathong beautiful night river background",
+    
+    # --- ธันวาคม (December) ---
+    "[Dec] Christmas luxury hotel lobby with tree",
+    "[Dec] minimalist stone pedestal surrounded by elegant Christmas pine and soft bokeh",
+    "[Dec] New Year's Eve glamorous countdown party background"
 ]
 
 # --- 💎 โหมด 3: PREMIUM (High-End Product Mockup) ---
