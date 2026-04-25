@@ -6,7 +6,7 @@ import re
 st.set_page_config(page_title="Commercial Engine: OMEGA GOD MODE", page_icon="⚡", layout="wide")
 
 # ==========================================
-# 🧬 1. Master DNA Database (ตรวจสอบความครบถ้วนแล้ว: 21 หมวดหมู่ย่อย + ฝัง stylize_range)
+# 🧬 1. Master DNA Database (21 หมวดหมู่ย่อย + Auto-Stylize)
 # ==========================================
 
 # 🏢 1.1 DNA โหมด NORMAL (Everyday Commercial)
@@ -40,7 +40,7 @@ DNA_NORMAL = {
 # 🎄 1.2 DNA โหมด HOLIDAY (Seasonal Podiums)
 DNA_HOLIDAY = {
     "🧧 Jan-Feb (New Year & Valentine)": {
-        "scenes": ["premium red and gold lacquer podium for Lunar New Year", "romantic frosted pink glass podium for Valentine's Day"],
+        "scenes": ["[Jan-Feb] premium red and gold lacquer podium for Lunar New Year", "[Feb] romantic frosted pink glass podium for Valentine's Day"],
         "lights": ["warm festive ambient glow", "soft romantic diffused light"],
         "cameras": ["85mm lens, professional depth of field", "shot on medium format, highly detailed"],
         "uis": ["wide empty copy space for festive promotions", "centered layout for seasonal greeting"],
@@ -48,7 +48,7 @@ DNA_HOLIDAY = {
         "stylize_range": (150, 250)
     },
     "💦 Apr (Songkran & Spring)": {
-        "scenes": ["smooth white marble podium with soft water ripples for Songkran summer theme", "minimalist stone pedestal with Sakura petals falling"],
+        "scenes": ["[Apr] smooth white marble podium with soft water ripples for Songkran summer theme", "minimalist stone pedestal with Sakura petals falling"],
         "lights": ["vibrant high-contrast summer sun", "soft peaceful spring daylight"],
         "cameras": ["fast shutter speed to freeze water ripples", "dreamy soft focus lens"],
         "uis": ["dynamic layout with splash space", "centered calm composition"],
@@ -56,7 +56,7 @@ DNA_HOLIDAY = {
         "stylize_range": (100, 200)
     },
     "🎃 Oct-Nov (Halloween & Diwali & Black Friday)": {
-        "scenes": ["matte white geometric steps decorated with subtle autumn leaves", "luxury dark obsidian platform with glowing diya lamps", "dark sleek podium for Black Friday tech sale"],
+        "scenes": ["[Oct] matte white geometric steps decorated with subtle autumn leaves", "[Oct-Nov] luxury dark obsidian platform with glowing diya lamps", "[Nov] dark sleek podium for Black Friday tech sale"],
         "lights": ["moody autumn evening light", "glowing ambient fire light"],
         "cameras": ["high contrast cinematic style", "sharp commercial focus"],
         "uis": ["lower third empty space for sale text", "dramatic negative space on the left"],
@@ -64,7 +64,7 @@ DNA_HOLIDAY = {
         "stylize_range": (150, 300)
     },
     "🎄 Dec (Christmas & Year End)": {
-        "scenes": ["minimalist stone pedestal surrounded by elegant Christmas pine and soft bokeh", "luxury hotel lobby display podium with subtle festive decor"],
+        "scenes": ["[Dec] minimalist stone pedestal surrounded by elegant Christmas pine and soft bokeh", "[Dec] luxury hotel lobby display podium with subtle festive decor"],
         "lights": ["festive warm bokeh lighting", "cozy winter window light"],
         "cameras": ["50mm lens, creamy holiday lights bokeh", "crisp commercial photography"],
         "uis": ["lower third empty space for holiday sale text", "perfectly balanced negative space"],
@@ -209,24 +209,30 @@ work_mode = st.radio(
     index=2
 )
 
-# ดึง Dictionary ตามโหมดหลักที่เลือก
+# จัดการชื่อโหมดให้สวยงามสำหรับ UI และตั้งชื่อไฟล์
 if "Premium" in work_mode or "พรีเมียม" in work_mode:
     current_dna_dict = DNA_PREMIUM
+    mode_th = "โหมดพรีเมียม"
+    mode_name = "Premium"
     default_ar_index = 0 # 16:9
     default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, octane render, unreal engine, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
 elif "เทศกาล" in work_mode:
     current_dna_dict = DNA_HOLIDAY
+    mode_th = "โหมดเทศกาล"
+    mode_name = "Holiday"
     default_ar_index = 1 # 3:2
     default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
 else:
     current_dna_dict = DNA_NORMAL
+    mode_th = "โหมดปกติ"
+    mode_name = "Normal"
     default_ar_index = 1 # 3:2
     default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, text, watermark, logo, signatures"
 
 st.markdown("---")
 
 # --- ชั้นที่ 2: เลือกอุตสาหกรรมย่อย ---
-st.subheader(f"🏭 ขั้นตอนที่ 2: เลือกอุตสาหกรรมเป้าหมาย (ใน{work_mode.split(' ')[1]})")
+st.subheader(f"🏭 ขั้นตอนที่ 2: เลือกอุตสาหกรรมเป้าหมาย (ใน{mode_th})")
 industry_options = ["🌟 สุ่มผสมทุกหมวด (All in this mode)"] + list(current_dna_dict.keys())
 selected_industry = st.selectbox("เลือกอุตสาหกรรมที่ต้องการเจาะตลาด:", industry_options)
 
@@ -246,11 +252,13 @@ else:
     available_cameras, available_uis, available_colors = dna["cameras"], dna["uis"], dna["colors"]
     s_min, s_max = dna["stylize_range"] # ดึงค่า --s เฉพาะอุตสาหกรรม
     
-    # Override Aspect Ratio ตามอุตสาหกรรมที่เลือก
+    # Override Aspect Ratio ตามอุตสาหกรรมที่เลือก (อุดช่องโหว่ด้วย else)
     if any(x in selected_industry for x in ["Tech", "Automotive", "Skincare", "Luxury"]):
         default_ar_index = 0 # 16:9 
     elif any(x in selected_industry for x in ["Corporate", "Pet Food", "Baby"]):
         default_ar_index = 1 # 3:2
+    else:
+        default_ar_index = 1 # 3:2 (ค่า Default ครอบจักรวาลสำหรับหมวดอื่นๆ)
 
 # ==========================================
 # ⚙️ 4. UI Sidebar & Settings
@@ -290,14 +298,19 @@ with col3:
 if st.button("🚀 Generate PERFECT Prompts", use_container_width=True):
     prompts = []
     for i in range(prompt_count):
-        sel_scene = random.choice(available_scenes) if scene == "Auto (สุ่มตาม DNA)" else scene
+        # ดึงค่าแบบดิบๆ ออกมาก่อน
+        sel_scene_raw = random.choice(available_scenes) if scene == "Auto (สุ่มตาม DNA)" else scene
+        
+        # ตัดขยะ [วงเล็บ] ทิ้งให้หมดจด เพื่อความสะอาดของ Prompt
+        sel_scene = re.sub(r'\[.*?\]\s*', '', sel_scene_raw).strip()
+        
         sel_light = random.choice(available_lights) if lighting == "Auto (สุ่มตาม DNA)" else lighting
         sel_cam = random.choice(available_cameras) if camera == "Auto (สุ่มตาม DNA)" else camera
         sel_ui = random.choice(available_uis) if ui_layout == "Auto (สุ่มตาม DNA)" else ui_layout
         sel_color = random.choice(available_colors) if color_psych == "Auto (สุ่มตาม DNA)" else color_psych
 
         # ฐาน Prompt แยกตามโหมด
-        if "Premium" in work_mode or "เทศกาล" in work_mode:
+        if mode_name in ["Premium", "Holiday"]:
             base_core = "empty product mockup background, extreme high-end commercial asset, photography award winner"
         else:
             base_core = "empty commercial background, high-end stock photography"
@@ -322,8 +335,7 @@ if 'prompts' in st.session_state:
         st.code(p, language="text")
     prompt_text = "\n".join(st.session_state['prompts'])
     
-    # ดึงชื่อเพื่อตั้งชื่อไฟล์
-    safe_mode = work_mode.split(' ')[1]
-    safe_industry = re.sub(r'[^a-zA-Z0-9]', '_', selected_industry) if "🌟" not in selected_industry else "All"
-    file_name = f"mj_DNA_{safe_mode}_{safe_industry}_prompts.txt"
+    # ดึงชื่อเพื่อตั้งชื่อไฟล์ให้ Clean (ยุบ Underscore ซ้ำซ้อนทิ้ง)
+    safe_industry = re.sub(r'[^a-zA-Z0-9]+', '_', selected_industry).strip('_') if "🌟" not in selected_industry else "All"
+    file_name = f"mj_DNA_{mode_name}_{safe_industry}_prompts.txt"
     st.download_button(label="💾 ดาวน์โหลดไฟล์ .txt", data=prompt_text, file_name=file_name, mime="text/plain", use_container_width=True)
