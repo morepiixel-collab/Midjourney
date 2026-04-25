@@ -87,44 +87,7 @@ MOOD_TONE_LIST = ["neutral corporate", "blue tech tone", "warm realistic", "clea
 USE_CASE_LIST = ["minimal clean composition", "strong leading lines", "macro close-up texture", "wide banner composition", "vertical ad layout"]
 
 # ==========================================
-# ⚙️ UI Sidebar (การตั้งค่า + กล่องคำแนะนำที่อัปเกรดแล้ว)
-# ==========================================
-with st.sidebar:
-    st.header("⚙️ Settings")
-    prompt_count = st.number_input("จำนวน Prompts", min_value=1, max_value=500, step=10, value=50)
-    aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "3:2", "1:1", "4:5", "9:16"], index=1)
-    
-    st.markdown("---")
-    st.subheader("🛡️ Quality Control")
-    negative_prompt = st.text_area(
-        "Negative Prompt (--no)", 
-        value="vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box", 
-        height=100
-    )
-
-    # 💡 กล่องข้อความแนะนำแบบจัดเต็ม (กันลืม)
-    st.markdown("---")
-    st.subheader("📌 คัมภีร์ 1,000 เหรียญ (ห้ามลืม!)")
-    with st.expander("📖 เปิดอ่านเคล็ดลับสายสต็อก", expanded=True):
-        st.markdown("""
-        **1. กฎ 3 เดือน (The 90-Day Rule):**
-        อัปโหลดภาพเทศกาลล่วงหน้า 3 เดือนเสมอ เพื่อให้อัลกอริทึม Index ทันช่วงคนซื้อเยอะที่สุด (เช่น สงกรานต์ ต้องส่งตั้งแต่ ม.ค.)
-        
-        **2. สัดส่วนภาพ (AR Strategy):**
-        - `3:2` = ครอบจักรวาล เซฟสุด ขายได้กว้าง
-        - `16:9` = สายโฆษณา, Banner, เว็บไซต์ (ลูกค้าจ่ายหนัก)
-        - `4:5` = สาย Social Media Ads
-        *เทคนิค:* เจอ Prompt สวย ให้เจนซ้ำให้ครบทั้ง 3 สัดส่วน (1 Idea = 3 Assets)
-        
-        **3. โฟกัส "พื้นที่ใช้งาน" (Product is Hero):**
-        ลูกค้าซื้อภาพไปทำงานต่อ Copy Space ต้องชัด แสงต้องไม่กวนสินค้า เลี่ยงภาพที่ดูหลุดโลกหรือเป็นไซไฟเกินจริง
-        
-        **4. SEO Metadata (จุดชี้ชะตาอัลกอริทึม):**
-        ตอนนำไปส่งขาย Adobe Stock ให้คุมความยาวของ Title (ชื่อภาพ) ให้อยู่ที่ **150 - 190 ตัวอักษร** เสมอ นี่คือระยะที่ดัน SEO ได้แรงที่สุด
-        """)
-
-# ==========================================
-# 🖼️ UI พื้นที่หลัก
+# 👑 2. UI: Master Controller (ต้องอยู่บนสุดเพื่อควบคุม Sidebar)
 # ==========================================
 st.title("👑 Commercial Background Engine")
 st.markdown("ระบบผลิต Prompt ฉากหลังโฆษณา สำหรับโปรเจกต์รายได้ $1,000/เดือน")
@@ -132,25 +95,73 @@ st.markdown("---")
 
 st.subheader("🎯 เลือกโหมดการทำงาน (Work Mode)")
 work_mode = st.radio(
-    "สลับชุดข้อมูลตามแผนการผลิต:", 
+    "ระบบจะปรับค่า Default ของสัดส่วนภาพและ Negative Prompt ให้อัตโนมัติตามโหมดที่เลือก:", 
     [
         "🏢 โหมดปกติ (Corporate & Everyday Life)", 
         "🎄 โหมดเทศกาล (Seasonal & Holiday Podiums)", 
         "💎 โหมด Premium Product (Podium & High-End)"
     ],
-    horizontal=True
+    horizontal=True,
+    index=2 # ล็อกให้เปิดแอปมาเจอโหมด Premium เป็นค่าเริ่มต้นเลย
 )
 
 st.markdown("---")
 
-# โหลดข้อมูลตามโหมด
+# ==========================================
+# 🧠 3. Auto-Default Logic (ปรับค่าอัตโนมัติตามโหมด)
+# ==========================================
 if "Premium" in work_mode or "พรีเมียม" in work_mode:
     current_scenes, current_lights = SCENE_PREMIUM, LIGHTING_PREMIUM
+    default_ar_index = 0 # 16:9 เหมาะกับโฆษณา Banner ที่สุด
+    default_neg_prompt = "vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
+    mode_hint = "💡 ล็อกคำว่า 'product, bottle, box' ไว้ เพื่อบังคับให้ได้แท่นเปล่า 100%"
 elif "เทศกาล" in work_mode:
     current_scenes, current_lights = SCENE_HOLIDAY, LIGHTING_HOLIDAY
+    default_ar_index = 1 # 3:2 ครอบจักรวาล
+    default_neg_prompt = "vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures, people, person, face, hand"
+    mode_hint = "💡 กันคนและมือออกไป แต่ยอมให้มีสิ่งของตกแต่งเทศกาลได้"
 else:
     current_scenes, current_lights = SCENE_NORMAL, LIGHTING_NORMAL
+    default_ar_index = 1 # 3:2 ครอบจักรวาล
+    default_neg_prompt = "vector, 3d, illustration, cartoon, render, text, watermark, logo, signatures"
+    mode_hint = "💡 โหมดปกติ (ไม่ได้บล็อกคนหรือสิ่งของ เผื่อเจนภาพซูเปอร์มาร์เก็ตหรือห้องเรียน)"
 
+# ==========================================
+# ⚙️ 4. UI Sidebar (รับค่าที่อัปเดตแล้วจาก Master Controller)
+# ==========================================
+with st.sidebar:
+    st.header("⚙️ Settings")
+    prompt_count = st.number_input("จำนวน Prompts", min_value=1, max_value=500, step=10, value=50)
+    aspect_ratio = st.selectbox("สัดส่วนภาพ (Aspect Ratio)", ["16:9", "3:2", "1:1", "4:5", "9:16"], index=default_ar_index)
+    
+    st.markdown("---")
+    st.subheader("🛡️ Quality Control")
+    negative_prompt = st.text_area("Negative Prompt (--no)", value=default_neg_prompt, height=120)
+    st.info(mode_hint)
+
+    st.markdown("---")
+    st.subheader("📌 คัมภีร์ 1,000 เหรียญ")
+    with st.expander("📖 เปิดอ่านเคล็ดลับสายสต็อก", expanded=True):
+        st.markdown("""
+        **1. กฎ 3 เดือน (The 90-Day Rule):**
+        อัปโหลดภาพเทศกาลล่วงหน้า 3 เดือนเสมอ (เช่น สงกรานต์ ส่งตั้งแต่ ม.ค.)
+        
+        **2. สัดส่วนภาพ (AR Strategy):**
+        - `3:2` = เซฟสุด ขายได้กว้าง
+        - `16:9` = สายโฆษณา Banner เว็บไซต์
+        - `4:5` = สาย Social Media Ads
+        *เทคนิค:* 1 Idea ควรแตกให้ครบทั้ง 3 สัดส่วน
+        
+        **3. โฟกัส "พื้นที่ใช้งาน":**
+        ลูกค้าซื้อภาพไปทำงานต่อ Copy Space ต้องชัดเจน
+        
+        **4. SEO Metadata:**
+        คุมความยาว Title (ชื่อภาพ) ให้อยู่ที่ **150 - 190 ตัวอักษร** ดัน SEO ได้แรงที่สุด
+        """)
+
+# ==========================================
+# 📍 5. โครงสร้างโมดูลและการเจนภาพ
+# ==========================================
 st.subheader("📍 กำหนดโครงสร้างโมดูล (Modules)")
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -163,7 +174,6 @@ with col3:
     mood = st.selectbox("5. MOOD / TONE", ["Auto (สุ่ม)"] + MOOD_TONE_LIST)
     use_case = st.selectbox("6. USE-CASE", ["Auto (สุ่ม)"] + USE_CASE_LIST)
 
-# --- ระบบประมวลผล ---
 if st.button("🚀 Generate Master Prompts", use_container_width=True):
     prompts = []
     for i in range(prompt_count):
