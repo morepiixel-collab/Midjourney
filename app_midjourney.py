@@ -17,7 +17,7 @@ SCENE_NORMAL = [
     "modern minimalist classroom with empty desks",
     "bright university library with bookshelves in background",
     "quiet school corridor with lockers and soft sunlight",
-    "minimalist serene bedroom with soft morning light on bed",import streamlit as st
+    "minimalist serene bedroom with soft morning light on bed",
 import random
 import re
 
