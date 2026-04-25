@@ -3,14 +3,71 @@ import random
 import re
 
 # --- ตั้งค่าหน้าเว็บ Streamlit ---
-st.set_page_config(page_title="Commercial Engine: ABSOLUTE GOD MODE", page_icon="⚡", layout="wide")
+st.set_page_config(page_title="Commercial Engine: GOD MODE", page_icon="⚡", layout="wide")
 
 # ==========================================
-# 🧬 1. Master DNA Database (ฉบับสมบูรณ์ 15 อุตสาหกรรม ไม่มีตัดทอน)
+# 🧬 1. Master DNA Database (แบ่งแยก 3 โหมดชัดเจน)
 # ==========================================
 
-INDUSTRY_DNA = {
-    # ---------------- 💎 สาย PREMIUM (12 เสาหลัก + 2 หมวดใหม่) ----------------
+# 🏢 1.1 DNA โหมด NORMAL (Everyday Commercial)
+DNA_NORMAL = {
+    "💼 Corporate & Workspace": {
+        "scenes": ["modern office hallway", "glass corridor", "startup workspace", "meeting room", "minimalist desk surface", "clean architectural background"],
+        "lights": ["natural side lighting", "cool clean office daylight"],
+        "cameras": ["standard architectural photography lens", "crisp wide angle commercial shot"],
+        "uis": ["wide banner composition for web headers", "standard rule of thirds composition"],
+        "colors": ["neutral corporate blue and gray tones", "clean bright everyday color palette"]
+    },
+    "🏫 Education & School": {
+        "scenes": ["modern minimalist classroom with empty desks", "quiet school corridor with soft sunlight", "bright university library with bookshelves"],
+        "lights": ["bright morning classroom lighting", "soft diffused window light"],
+        "cameras": ["50mm lens natural perspective", "clean documentary style"],
+        "uis": ["centered layout with top copy space", "wide empty space on the left"],
+        "colors": ["warm inviting wood tones and crisp white", "bright educational primary colors"]
+    },
+    "🏠 Home & Daily Life": {
+        "scenes": ["clean modern bathroom with marble surfaces", "bright airy minimalist kitchen with clean countertops", "modern supermarket aisle with blurred products"],
+        "lights": ["soft morning home lighting", "bright clean kitchen daylight"],
+        "cameras": ["lifestyle product photography style", "35mm lens for natural room feel"],
+        "uis": ["natural asymmetric composition", "side copy space for lifestyle text"],
+        "colors": ["warm comforting home tones", "fresh morning natural colors"]
+    }
+}
+
+# 🎄 1.2 DNA โหมด HOLIDAY (Seasonal Podiums)
+DNA_HOLIDAY = {
+    "🧧 Jan-Feb (New Year & Valentine)": {
+        "scenes": ["premium red and gold lacquer podium for Lunar New Year", "romantic frosted pink glass podium for Valentine's Day"],
+        "lights": ["warm festive ambient glow", "soft romantic diffused light"],
+        "cameras": ["85mm lens, professional depth of field", "shot on medium format, highly detailed"],
+        "uis": ["wide empty copy space for festive promotions", "centered layout for seasonal greeting"],
+        "colors": ["auspicious crimson red and metallic gold", "soft romantic pink and elegant rose gold"]
+    },
+    "💦 Apr (Songkran & Spring)": {
+        "scenes": ["smooth white marble podium with soft water ripples for Songkran summer theme", "minimalist stone pedestal with Sakura petals falling"],
+        "lights": ["vibrant high-contrast summer sun", "soft peaceful spring daylight"],
+        "cameras": ["fast shutter speed to freeze water ripples", "dreamy soft focus lens"],
+        "uis": ["dynamic layout with splash space", "centered calm composition"],
+        "colors": ["refreshing cyan and summer blue", "soft pastel pink and pure white"]
+    },
+    "🎃 Oct-Nov (Halloween & Diwali & Black Friday)": {
+        "scenes": ["matte white geometric steps decorated with subtle autumn leaves", "luxury dark obsidian platform with glowing diya lamps", "dark sleek podium for Black Friday tech sale"],
+        "lights": ["moody autumn evening light", "glowing ambient fire light"],
+        "cameras": ["high contrast cinematic style", "sharp commercial focus"],
+        "uis": ["lower third empty space for sale text", "dramatic negative space on the left"],
+        "colors": ["warm autumn orange and brown", "stealth black with bold red sale accents"]
+    },
+    "🎄 Dec (Christmas & Year End)": {
+        "scenes": ["minimalist stone pedestal surrounded by elegant Christmas pine and soft bokeh", "luxury hotel lobby display podium with subtle festive decor"],
+        "lights": ["festive warm bokeh lighting", "cozy winter window light"],
+        "cameras": ["50mm lens, creamy holiday lights bokeh", "crisp commercial photography"],
+        "uis": ["lower third empty space for holiday sale text", "perfectly balanced negative space"],
+        "colors": ["pine green, warm gold, and crisp snow white", "classic winter wonderland tones"]
+    }
+}
+
+# 💎 1.3 DNA โหมด PREMIUM (14 อุตสาหกรรมทำเงิน)
+DNA_PREMIUM = {
     "🧴 Skincare & Hydration": {
         "scenes": ["frosted glass cylinder podium emerging from crystal clear rippling water", "minimalist natural stone pedestal surrounded by dynamic clear water splashes"],
         "lights": ["soft diffused studio lighting", "clean bright shadowless e-commerce lighting"],
@@ -19,49 +76,63 @@ INDUSTRY_DNA = {
         "colors": ["clinical cyan and stark white tones", "refreshing aquatic blue and pure white"]
     },
     "🥼 Clinical & Dermocosmetics": {
-        "scenes": ["sterile white marble podium in a bright minimalist skincare laboratory", "premium brushed stainless steel medical pedestal in a clean white environment", "minimalist white geometric steps in a pristine anti-aging clinic"],
+        "scenes": ["sterile white marble podium in a bright minimalist skincare laboratory", "premium brushed stainless steel medical pedestal in a clean white environment"],
         "lights": ["bright crisp clinical lighting", "clean shadowless lighting setup"],
         "cameras": ["sharp digital medium format", "100mm macro for clinical precision"],
         "uis": ["clean minimalist layout with ample negative space", "side copy space for scientific claims"],
         "colors": ["sterile stark white and subtle clinical blue", "minimalist pure white with silver accents"]
     },
     "💎 High-End Luxury": {
-        "scenes": ["black obsidian podium with subtle gold marble veins", "presentation pedestal elegantly draped in flowing dark emerald velvet", "white marble display stand surrounded by delicate floating white silk cloth"],
+        "scenes": ["black obsidian podium with subtle gold marble veins", "presentation pedestal elegantly draped in flowing dark emerald velvet"],
         "lights": ["dramatic elegant spotlighting with soft falloff", "moody studio lighting with gold reflections"],
         "cameras": ["shot on 85mm f/1.4, luxurious creamy bokeh", "high-end editorial fashion photography style"],
         "uis": ["centered minimalist composition", "elegant top negative space for serif typography"],
         "colors": ["luxurious rich emerald and gold tones", "deep burgundy and polished brass accents"]
     },
     "🌿 Organic & Wellness": {
-        "scenes": ["wabi-sabi style textured clay podium with minimal organic dried foliage", "premium terrazzo stone platform with moss accents", "rough natural sandstone pedestal set against a clean warm beige background"],
+        "scenes": ["wabi-sabi style textured clay podium with minimal organic dried foliage", "premium terrazzo stone platform with moss accents"],
         "lights": ["soft dappled sunlight filtering through leaves", "warm morning golden hour lighting"],
         "cameras": ["Kodak Portra 400 film stock simulation, subtle film grain", "shot on 50mm lens, natural documentary style"],
         "uis": ["perfectly balanced negative space for magazine layout", "top copy space for organic brand messaging"],
         "colors": ["earthy organic neutral tones", "warm beige, terracotta, and muted sage green"]
     },
     "💻 Tech & Men's Grooming": {
-        "scenes": ["brutalist raw concrete block with graphic shadows", "sleek brushed gunmetal circular podium in a dark tech environment", "matte black geometric platform with subtle minimalist edge lighting"],
+        "scenes": ["brutalist raw concrete block with graphic shadows", "sleek brushed gunmetal circular podium in a dark tech environment"],
         "lights": ["dramatic editorial hard spotlight with sharp shadows", "minimalist neon edge lighting"],
         "cameras": ["shot on Hasselblad medium format, extreme high contrast", "sharp digital medium format"],
         "uis": ["wide empty copy space on the right for tech specifications", "lower third empty space for UI buttons"],
         "colors": ["charcoal and matte black tones with subtle silver", "dark moody cyber tones with one accent color"]
     },
+    "🚗 Automotive & Parts": {
+        "scenes": ["high-tech carbon fiber display platform in a modern dark garage", "brushed aluminum circular podium with industrial asphalt texture", "forged steel pedestal with sharp geometric lines"],
+        "lights": ["dramatic hard edge lighting to highlight metallic curves", "cool blue industrial studio lighting with sharp highlights"],
+        "cameras": ["shot on Hasselblad medium format, extreme detail on metal texture", "wide angle 24mm lens for heroic scale"],
+        "uis": ["side copy space for technical specifications", "lower third space for automotive brand name"],
+        "colors": ["metallic silver and deep charcoal blacks", "high-contrast racing red and black"]
+    },
+    "🐾 Pet Food & Pet Care": {
+        "scenes": ["rustic light oak wooden podium on a clean sunlit kitchen floor", "matte ceramic pedestal surrounded by fresh organic ingredients", "minimalist wooden stand in a bright airy pet-friendly living room"],
+        "lights": ["warm natural morning sunlight", "soft airy high-key studio lighting"],
+        "cameras": ["low angle pet-eye view shot on 50mm lens", "shot on 85mm, soft natural depth of field"],
+        "uis": ["top copy space for pet brand logo", "wide empty space on the right for nutrition facts"],
+        "colors": ["warm earthy browns and leafy greens", "vibrant friendly orange and teal"]
+    },
     "🍭 Gen-Z & Pop Cosmetics": {
-        "scenes": ["pastel pink geometric acrylic display blocks", "minimalist matte colorful arches and steps", "translucent holographic glass podium in a bright airy studio"],
+        "scenes": ["pastel pink geometric acrylic display blocks", "minimalist matte colorful arches and steps"],
         "lights": ["bright high-key studio lighting", "playful colored gel lighting setup"],
         "cameras": ["crisp commercial digital photography", "flash photography style with distinct shadows"],
         "uis": ["dynamic asymmetrical layout with copy space", "bold center placement with framing elements"],
         "colors": ["vibrant high-contrast complementary colors", "soft pastel holographic and neon tones"]
     },
     "☕ Edibles & Supplements": {
-        "scenes": ["rich rustic walnut wood slice serving as a premium display stand", "dark rough slate stone podium with subtle warm natural lighting", "clean white kitchen marble countertop podium with soft morning light"],
+        "scenes": ["rich rustic walnut wood slice serving as a premium display stand", "dark rough slate stone podium with subtle warm natural lighting"],
         "lights": ["warm appetizing directional light", "soft morning sunlight"],
         "cameras": ["shot on 85mm lens, shallow depth of field", "food photography style, macro details"],
         "uis": ["centered composition with top copy space", "wide side copy space for nutritional info"],
         "colors": ["warm rich earthy tones", "fresh morning natural colors"]
     },
     "🏋️‍♂️ Fitness & Sports Nutrition": {
-        "scenes": ["matte black rubberized texture podium in a moody athletic gym environment", "perforated dark steel industrial pedestal with subtle cool rim lighting"],
+        "scenes": ["matte black rubberized texture podium in a moody athletic gym environment", "perforated dark steel industrial pedestal with cool rim lighting"],
         "lights": ["dramatic high-contrast gym lighting", "cool industrial rim lighting"],
         "cameras": ["wide angle heroic perspective", "gritty film look with high contrast"],
         "uis": ["bold typography layout with side copy space", "centered heroic product placement"],
@@ -94,78 +165,71 @@ INDUSTRY_DNA = {
         "cameras": ["lifestyle product photography style", "85mm lens for intimate product focus"],
         "uis": ["side copy space for personal care routine text", "clean centered layout"],
         "colors": ["refreshing spa aqua and white", "warm comforting cream and beige"]
-    },
-    "🐾 Pet Food & Pet Care": {
-        "scenes": ["rustic light oak wooden podium on a clean sunlit kitchen floor", "matte ceramic pedestal surrounded by fresh organic ingredients", "minimalist wooden stand in a bright airy pet-friendly living room"],
-        "lights": ["warm natural morning sunlight", "soft airy high-key studio lighting"],
-        "cameras": ["low angle pet-eye view shot on 50mm lens", "shot on 85mm, soft natural depth of field"],
-        "uis": ["top copy space for pet brand logo", "wide empty space on the right for nutrition facts"],
-        "colors": ["warm earthy browns and leafy greens", "vibrant friendly orange and teal"]
-    },
-    "🚗 Automotive & Parts": {
-        "scenes": ["high-tech carbon fiber display platform in a modern dark garage", "brushed aluminum circular podium with industrial asphalt texture", "forged steel pedestal with sharp geometric lines"],
-        "lights": ["dramatic hard edge lighting to highlight metallic curves", "cool blue industrial studio lighting with sharp highlights"],
-        "cameras": ["shot on Hasselblad medium format, extreme detail on metal texture", "wide angle 24mm lens for heroic scale"],
-        "uis": ["side copy space for technical specifications", "lower third space for automotive brand name"],
-        "colors": ["metallic silver and deep charcoal blacks", "high-contrast racing red and black"]
-    },
-
-    # ---------------- 🎄 สาย HOLIDAY & NORMAL ----------------
-    "🎈 Seasonal & Festive": {
-        "scenes": ["premium red and gold lacquer podium", "minimalist stone pedestal with Christmas pine", "romantic frosted pink glass podium"],
-        "lights": ["warm festive ambient glow", "festive warm bokeh lighting"],
-        "cameras": ["85mm lens, professional depth of field", "50mm lens, holiday lights bokeh"],
-        "uis": ["wide empty copy space for festive promos", "centered seasonal greeting layout"],
-        "colors": ["auspicious red and gold", "pine green, warm gold, and snow white"]
-    },
-    "💼 Corporate & Daily": {
-        "scenes": ["modern office hallway glass corridor", "minimalist desk surface", "clean modern bathroom with marble"],
-        "lights": ["natural side lighting", "cool clean office daylight"],
-        "cameras": ["standard architectural photography lens", "crisp wide angle commercial shot"],
-        "uis": ["wide banner composition for web headers", "standard rule of thirds"],
-        "colors": ["neutral corporate blue and gray", "clean bright everyday color palette"]
     }
 }
 
 # ==========================================
-# ⚡ 2. UI: Master Controller
+# ⚡ 2. UI: Master Controller (แบ่ง 2 ชั้น)
 # ==========================================
 st.title("⚡ ABSOLUTE GOD MODE: Commercial Engine")
-st.markdown("ระบบผลิต Prompt ที่รวม DNA ทุกอุตสาหกรรมแบบครบสมบูรณ์ 100% ไม่มีตกหล่น")
+st.markdown("ระบบผลิต Prompt ที่รวม DNA ทุกอุตสาหกรรม พร้อมโครงสร้างการทำงาน 2 ชั้น (ง่ายและทรงพลัง)")
 st.markdown("---")
 
-st.subheader("🏭 เลือกหมวดอุตสาหกรรมเป้าหมาย (Industry DNA)")
-industry_options = ["🌟 สุ่มผสมทุกหมวด (All Industries)"] + list(INDUSTRY_DNA.keys())
-selected_industry = st.selectbox("เลือกอุตสาหกรรมที่ต้องการเจาะตลาด:", industry_options, index=1)
+# --- ชั้นที่ 1: เลือกโหมดหลัก ---
+st.subheader("🎯 ขั้นตอนที่ 1: เลือกโหมดการทำงานหลัก")
+work_mode = st.radio(
+    "ระบบจะดึงฐานข้อมูลอุตสาหกรรมตามโหมดที่คุณเลือก:", 
+    [
+        "🏢 โหมดปกติ (Corporate & Everyday)", 
+        "🎄 โหมดเทศกาล (Seasonal Podiums)", 
+        "💎 โหมด Premium Product (Podium & High-End)"
+    ],
+    horizontal=True,
+    index=2
+)
+
+# ดึง Dictionary ตามโหมดที่เลือก
+if "Premium" in work_mode or "พรีเมียม" in work_mode:
+    current_dna_dict = DNA_PREMIUM
+    default_ar_index = 0 # 16:9 
+    default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, octane render, unreal engine, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
+elif "เทศกาล" in work_mode:
+    current_dna_dict = DNA_HOLIDAY
+    default_ar_index = 1 # 3:2 
+    default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
+else:
+    current_dna_dict = DNA_NORMAL
+    default_ar_index = 1 # 3:2 
+    default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, text, watermark, logo, signatures"
+
+st.markdown("---")
+
+# --- ชั้นที่ 2: เลือกอุตสาหกรรมย่อย ---
+st.subheader(f"🏭 ขั้นตอนที่ 2: เลือกอุตสาหกรรมเป้าหมาย (ใน{work_mode.split(' ')[1]})")
+industry_options = ["🌟 สุ่มผสมทุกหมวด (All in this mode)"] + list(current_dna_dict.keys())
+selected_industry = st.selectbox("เลือกอุตสาหกรรมที่ต้องการเจาะตลาด:", industry_options)
 
 # ==========================================
 # 🧠 3. DNA Extraction Logic
 # ==========================================
-if selected_industry == "🌟 สุ่มผสมทุกหมวด (All Industries)":
-    available_scenes = list(set([item for sublist in [dna["scenes"] for dna in INDUSTRY_DNA.values()] for item in sublist]))
-    available_lights = list(set([item for sublist in [dna["lights"] for dna in INDUSTRY_DNA.values()] for item in sublist]))
-    available_cameras = list(set([item for sublist in [dna["cameras"] for dna in INDUSTRY_DNA.values()] for item in sublist]))
-    available_uis = list(set([item for sublist in [dna["uis"] for dna in INDUSTRY_DNA.values()] for item in sublist]))
-    available_colors = list(set([item for sublist in [dna["colors"] for dna in INDUSTRY_DNA.values()] for item in sublist]))
-    default_ar_index = 1
-    default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
+if selected_industry == "🌟 สุ่มผสมทุกหมวด (All in this mode)":
+    # รวมทุกหมวดในโหมดนั้น
+    available_scenes = list(set([item for sublist in [dna["scenes"] for dna in current_dna_dict.values()] for item in sublist]))
+    available_lights = list(set([item for sublist in [dna["lights"] for dna in current_dna_dict.values()] for item in sublist]))
+    available_cameras = list(set([item for sublist in [dna["cameras"] for dna in current_dna_dict.values()] for item in sublist]))
+    available_uis = list(set([item for sublist in [dna["uis"] for dna in current_dna_dict.values()] for item in sublist]))
+    available_colors = list(set([item for sublist in [dna["colors"] for dna in current_dna_dict.values()] for item in sublist]))
 else:
-    dna = INDUSTRY_DNA[selected_industry]
+    # ดึงเฉพาะ DNA ของอุตสาหกรรมย่อยที่เลือก
+    dna = current_dna_dict[selected_industry]
     available_scenes, available_lights = dna["scenes"], dna["lights"]
     available_cameras, available_uis, available_colors = dna["cameras"], dna["uis"], dna["colors"]
     
-    # ปรับแต่งค่าอัตโนมัติตามอุตสาหกรรม
+    # ปรับสัดส่วนภาพอัตโนมัติตามอุตสาหกรรม
     if "Automotive" in selected_industry or "Tech" in selected_industry:
-        default_ar_index = 0 # 16:9 เหมาะกับงานโฆษณา Banner
-    elif "Corporate" in selected_industry:
+        default_ar_index = 0 # 16:9
+    elif "Pet Food" in selected_industry or "Corporate" in selected_industry:
         default_ar_index = 1 # 3:2
-    else:
-        default_ar_index = 1 # 3:2 ครอบจักรวาล
-        
-    if "Corporate" in selected_industry:
-        default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, text, watermark, logo, signatures"
-    else:
-        default_neg_prompt = "vector, 3d, illustration, cartoon, render, cgi, octane render, unreal engine, text, watermark, logo, signatures, people, person, face, hand, product, bottle, box"
 
 # ==========================================
 # ⚙️ 4. UI Sidebar
@@ -178,12 +242,12 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("🛡️ Strict Photo Mode")
     negative_prompt = st.text_area("Negative Prompt", value=default_neg_prompt, height=140)
-    st.info("💡 ระบบล็อกค่าที่เหมาะสมกับหมวดที่คุณเลือกไว้แล้ว")
+    st.info("💡 ระบบล็อกค่า Negative Prompt ตามโหมดหลักที่คุณเลือกไว้แล้ว")
 
 # ==========================================
 # 📍 5. โครงสร้างโมดูลที่ผ่านการกรอง DNA แล้ว
 # ==========================================
-st.subheader("📍 กำหนดโครงสร้าง (Filtered DNA Modules)")
+st.subheader("📍 ขั้นตอนที่ 3: กำหนดโครงสร้าง (Filtered DNA Modules)")
 col1, col2, col3 = st.columns(3)
 with col1:
     scene = st.selectbox("1. SCENE (แท่นวาง)", ["Auto (สุ่มตาม DNA)"] + available_scenes)
@@ -206,16 +270,17 @@ if st.button("🚀 Generate PERFECT Prompts", use_container_width=True):
         sel_ui = random.choice(available_uis) if ui_layout == "Auto (สุ่มตาม DNA)" else ui_layout
         sel_color = random.choice(available_colors) if color_psych == "Auto (สุ่มตาม DNA)" else color_psych
 
-        # ฐาน Prompt
-        base_core = "empty product mockup background, extreme high-end commercial asset, photography award winner"
-        if "Corporate" in selected_industry:
+        # ฐาน Prompt แยกตามโหมด
+        if "Premium" in work_mode or "เทศกาล" in work_mode:
+            base_core = "empty product mockup background, extreme high-end commercial asset, photography award winner"
+        else:
             base_core = "empty commercial background, high-end stock photography"
             
         prompt_elements = [base_core, sel_scene, sel_light, sel_cam, sel_color, sel_ui]
         clean_base = ", ".join(prompt_elements)
         
-        # ปรับ Stylize ให้ภาพดูสมจริง (Raw Photography Look)
-        stylize_value = random.randint(50, 100) if "Corporate" not in selected_industry else random.randint(100, 200)
+        # ปรับ Stylize ให้ภาพดูสมจริง
+        stylize_value = random.randint(50, 100) if "ปกติ" not in work_mode else random.randint(100, 200)
         
         final_prompt = f"/imagine prompt: {clean_base} --ar {aspect_ratio} --s {stylize_value} --style raw --v 7"
         if negative_prompt:
@@ -231,7 +296,8 @@ if 'prompts' in st.session_state:
         st.code(p, language="text")
     prompt_text = "\n".join(st.session_state['prompts'])
     
-    # ดึงชื่ออุตสาหกรรมมาตั้งชื่อไฟล์
-    safe_filename = re.sub(r'[^a-zA-Z0-9]', '_', selected_industry)
-    file_name = f"mj_DNA_{safe_filename}_prompts.txt"
+    # ดึงชื่อเพื่อตั้งชื่อไฟล์
+    safe_mode = work_mode.split(' ')[1]
+    safe_industry = re.sub(r'[^a-zA-Z0-9]', '_', selected_industry) if "🌟" not in selected_industry else "All"
+    file_name = f"mj_DNA_{safe_mode}_{safe_industry}_prompts.txt"
     st.download_button(label="💾 ดาวน์โหลดไฟล์ .txt", data=prompt_text, file_name=file_name, mime="text/plain", use_container_width=True)
